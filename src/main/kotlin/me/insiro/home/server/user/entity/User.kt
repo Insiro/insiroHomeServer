@@ -7,5 +7,5 @@ data class User(
         var name: String,
         var password: String,
         var email: String,
-        var writable: Int,
+        var permission: Int,
 ) : EntityVO<Long>()
