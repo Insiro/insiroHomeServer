@@ -17,12 +17,13 @@ class SecurityConfig(private val userService: UserService, private val authentic
         http
 
                 .securityContext { it.requireExplicitSave(true) }
-                .sessionManagement{it.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)}
+                .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) }
                 .userDetailsService(userService).authenticationProvider(authenticateProvider)
                 .csrf { it.disable() }
                 .authorizeHttpRequests {
                     it.requestMatchers("/**").permitAll().anyRequest().authenticated()
                 }
+
         return http.build()
     }
 }
