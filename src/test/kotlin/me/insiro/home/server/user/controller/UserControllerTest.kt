@@ -1,7 +1,6 @@
 package me.insiro.home.server.user.controller
 
-import me.insiro.home.server.AbsControllerTest
-import me.insiro.home.server.user.UserController
+import me.insiro.home.server.testUtils.AbsControllerTest
 import me.insiro.home.server.user.UserService
 import me.insiro.home.server.user.dto.NewUserDTO
 import me.insiro.home.server.user.dto.UpdateUserDTO
@@ -21,7 +20,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 class UserControllerTest : AbsControllerTest("/users") {
     private val mockUserService: UserService = mock(UserService::class.java)
     private lateinit var user: User
-
 
     @BeforeEach
     override fun init() {
@@ -62,14 +60,14 @@ class UserControllerTest : AbsControllerTest("/users") {
 
     @Test
     fun deleteUser() {
-        Mockito.`when`(mockUserService.deleteUser(user.id)).thenReturn(true)
+        Mockito.`when`(mockUserService.deleteUser(user.id!!)).thenReturn(true)
         mockMvc.perform(MockMvcRequestBuilders.delete(uri(user.id)))
                 .andExpect { status() }
     }
 
     @Test
     fun createUser() {
-        val newUserDTO = NewUserDTO(user.name, user.password, user.email)
+        val newUserDTO = NewUserDTO(user.name, user.hashedPassword, user.email)
         Mockito.`when`(mockUserService.createUser(newUserDTO)).thenReturn(user)
         mockMvc.perform(MockMvcRequestBuilders
                 .post(uri())

@@ -1,4 +1,4 @@
-package me.insiro.home.server
+package me.insiro.home.server.testUtils
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder

@@ -15,7 +15,7 @@ object Users : BaseIDTable() {
 
 data class User(
         var name: String,
-        var password: String,
+        var hashedPassword: String,
         var email: String,
         var permission: Int,
 ) : EntityVO<Long>()
