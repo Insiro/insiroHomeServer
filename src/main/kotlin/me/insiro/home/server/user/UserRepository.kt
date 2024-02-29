@@ -10,8 +10,9 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
+import org.springframework.stereotype.Repository
 
-
+@Repository
 class UserRepository : AbsRepository<Long, User, Users>(Users) {
     override fun new(vo: User): User {
         val id = transaction {

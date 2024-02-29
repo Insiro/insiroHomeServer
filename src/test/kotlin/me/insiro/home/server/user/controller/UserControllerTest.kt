@@ -70,7 +70,7 @@ class UserControllerTest : AbsControllerTest("/users") {
         val newUserDTO = NewUserDTO(user.name, user.hashedPassword, user.email)
         Mockito.`when`(mockUserService.createUser(newUserDTO)).thenReturn(user)
         mockMvc.perform(MockMvcRequestBuilders
-                .post(uri())
+                .post(uri)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(gson.toJson(newUserDTO)))
                 .andExpect { status().isOk }

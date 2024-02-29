@@ -18,6 +18,9 @@ abstract class AbsControllerTest(private val baseUrl: String) {
 
     @BeforeEach
     abstract fun init()
+
+    protected val uri:String
+        get() {return baseUrl}
     fun uri(child: Any? = null): String {
         child ?: return baseUrl
         return URI.create(baseUrl).resolve(child.toString()).toString()
