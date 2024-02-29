@@ -3,15 +3,16 @@ package me.insiro.home.server.user
 import me.insiro.home.server.user.dto.NewUserDTO
 import me.insiro.home.server.user.dto.UpdateUserDTO
 import me.insiro.home.server.user.entity.User
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 
 @Service
-class UserService {
+class UserService(val userRepository: UserRepository, val passwordEncoder: PasswordEncoder){
     fun getUser(id: Long): User? {
         TODO("Not yet implemented")
     }
 
-    fun updateUser(id: Long, updateUserDTO: UpdateUserDTO): User {
+    fun updateUser(id: Long, updateUserDTO: UpdateUserDTO): User? {
         TODO("Not yet implemented")
     }
 
@@ -23,7 +24,7 @@ class UserService {
         TODO("Not yet implemented")
     }
 
-    fun getUsers(offset: Long, limit: Int?): List<User> {
+    fun getUsers(offset: Int = 0, limit: Long?= null): List<User> {
         TODO("Not yet implemented")
     }
 }

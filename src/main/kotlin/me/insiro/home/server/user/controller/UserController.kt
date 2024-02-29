@@ -1,6 +1,7 @@
-package me.insiro.home.server.user
+package me.insiro.home.server.user.controller
 
 import me.insiro.home.server.application.exception.UserNotFoundException
+import me.insiro.home.server.user.UserService
 import me.insiro.home.server.user.dto.NewUserDTO
 import me.insiro.home.server.user.dto.UpdateUserDTO
 import me.insiro.home.server.user.dto.UserDTO
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("users")
 class UserController(private val userService: UserService) {
     @GetMapping
-    fun getAllUser(@RequestParam(required = false) offset: Long = 0, @RequestParam(required = false) limit: Int? = null): ResponseEntity<List<UserDTO>> {
+    fun getAllUser(@RequestParam(required = false) offset: Int = 0, @RequestParam(required = false) limit: Long? = null): ResponseEntity<List<UserDTO>> {
         val users = userService.getUsers(offset, limit).map(UserDTO.Companion::fromUser)
         return ResponseEntity(users, HttpStatus.OK)
     }
@@ -31,7 +32,8 @@ class UserController(private val userService: UserService) {
 
     @PatchMapping("{id}")
     fun updateUser(@PathVariable id: Long, @RequestBody updateUserDTO: UpdateUserDTO): ResponseEntity<UserDTO> {
-        val user = userService.updateUser(id, updateUserDTO)
+        val user = userService.updateUser(id, updateUserDTO) ?: throw UserNotFoundException(id)
+
         return ResponseEntity(UserDTO.fromUser(user), HttpStatus.OK)
     }
 

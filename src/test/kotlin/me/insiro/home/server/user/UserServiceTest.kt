@@ -1,144 +1,139 @@
 package me.insiro.home.server.user
 
 import me.insiro.home.server.application.AbsRepository
+import me.insiro.home.server.testUtils.AbsDataBaseTest
 import me.insiro.home.server.user.dto.NewUserDTO
 import me.insiro.home.server.user.dto.UpdateUserDTO
 import me.insiro.home.server.user.dto.UserRole
 import me.insiro.home.server.user.entity.User
 import me.insiro.home.server.user.entity.Users
-import org.jetbrains.exposed.sql.Op
+import me.insiro.home.server.user.utils.AuthPasswordProvider
 import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.SqlExpressionBuilder
-import org.jetbrains.exposed.sql.statements.UpdateStatement
+import org.jetbrains.exposed.sql.insertAndGetId
+import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.Mockito
-import org.mockito.Mockito.mock
 import org.mockito.junit.jupiter.MockitoExtension
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.context.annotation.Description
+import java.time.LocalDateTime
 
 @ExtendWith(MockitoExtension::class)
-class UserServiceTest {
-    private val mockUserRepository = mock(UserRepository::class.java)
-    private val userService = UserService(mockUserRepository)
+class UserServiceTest : AbsDataBaseTest(arrayListOf(Users)) {
+    private val userRepository = UserRepository()
+    private val passwordEncoder = AuthPasswordProvider()
+    private val userService = UserService(userRepository, passwordEncoder)
+
     private lateinit var user: User
 
     @BeforeEach
     fun init() {
+        resetDataBase()
         user = User("testName", "testPwd", "test@example.com", 0b1)
-        user.id = 1
+        user.id = insertUser(user)
+    }
+    private fun insertUser(user: User): Long = transaction {
+        Users.insertAndGetId {
+            it[name] = user.name
+            it[password] = user.hashedPassword
+            it[email] = user.email
+            it[permission] = user.permission
+            it[Users.createdAt] = user.createdAt
+        }.value
     }
 
     @Test
+    @Description("Test Get User With DataBase")
     fun getUser() {
         val uid = user.id!!
-        Mockito.`when`(mockUserRepository.findById(uid)).thenReturn(user)
-        Mockito.`when`(mockUserRepository.findById(Mockito.anyLong())).thenReturn(user)
-
+        //Return Null when Wrong ID is requested
         assertNull(userService.getUser(uid + 5))
 
+        //Return User's VO when
         val gUser = userService.getUser(uid)
         assertNotNull(gUser)
-        assertEquals(gUser!!.id!!, uid)
-        assertEquals(gUser.name, user.name)
-        assertEquals(gUser.email, user.email)
-        assertEquals(gUser.password, user.password)
-        assertEquals(gUser.permission, user.permission)
+        gUser!!
+        assertEquals(uid, gUser.id)
+        assertEquals(user.name, gUser.name)
+        assertEquals(user.email, gUser.email)
+        assertEquals(user.hashedPassword, gUser.hashedPassword)
+        assertEquals(user.permission, gUser.permission)
     }
 
     @Test
+    @Description("Test Update User With DataBase")
     fun updateUser() {
         val uid = user.id!!
-        user.name = "UpdateUser"
-        val updateDTO = UpdateUserDTO(user.name, null, null)
+        val updateDTO = UpdateUserDTO("UpdateUser", "newPasswd", null)
 
-        Mockito.`when`(mockUserRepository.update(user)).thenReturn(user)
         val updated = userService.updateUser(uid, updateDTO)
-        assertEquals(updateDTO.name, updated.name)
+        assertNotNull(updated)
+        assertEquals(updateDTO.name, updated!!.name)
         assertEquals(user.id, updated.id)
         assertEquals(user.email, updated.email)
-        assertEquals(user.password, updated.password)
         assertEquals(user.permission, updated.permission)
+        assertTrue(passwordEncoder.matches(updateDTO.password, updated.hashedPassword))
     }
 
     @Test
+    @Description("Test Delete User With DB")
     fun deleteUser() {
-        Mockito.`when`(mockUserRepository.delete(uid)).thenReturn(true)
-        assertEquals(userService.deleteUser(uid), true)
+        assertEquals(userService.deleteUser(user.id!!), true)
+        val nUser = transaction {
+            Users.selectAll().where { Users.id eq user.id }.count()
+        }
+        assertEquals(nUser, 0)
     }
 
     @Test
+    @Description("Test Create of User With DB")
     fun createUser() {
-        val passwordEncoder = PasswordEncoder()
-        val newUserDTO = NewUserDTO(user.name, "testPassword", user.email)
-        user.password = passwordEncoder.encode(newUserDTO.password)
+        // Test Name Conflict
+        var newUserDTO = NewUserDTO(user.name, user.hashedPassword, user.email)
+        assertThrows<UniqueKeyConflictAssertion> { userService.createUser(newUserDTO) }
 
-        Mockito.`when`(mockUserRepository.create(user)).thenReturn(user)
 
+        newUserDTO = NewUserDTO(user.name + "_New", "testPwd", "test@example.com")
+        user.hashedPassword = passwordEncoder.encode(newUserDTO.password)
+        user.id = 1
 
         val created = userService.createUser(newUserDTO)
-        assertEquals(created.name, newUserDTO.name)
-        assertEquals(created.email, newUserDTO.email)
-        assertEquals(created.permission, UserRole.ROLE_READ_ONLY.key)
-        assertTrue(created.password == passwordEncoder.encode(newUserDTO.password))
+
+        assertEquals(newUserDTO.name, created.name)
+        assertEquals(newUserDTO.email, created.email)
+        assertEquals(UserRole.ROLE_READ_ONLY.key, created.permission)
+
+        assertEquals(LocalDateTime.now().month, created.createdAt.month)
+        assertTrue(passwordEncoder.matches(newUserDTO.password, created.hashedPassword))
 
     }
 
     @Test
+    @Description("Test of Get Users")
     fun getUsers() {
-        Mockito.`when`(mockUserRepository.find { Users.name eq "" }).thenReturn(arrayListOf(user))
-        val ret = userService.getUsers()
-        assertTrue(ret.size == 1)
+        val users = userService.getUsers()
+        assertEquals(1, users.size)
     }
 }
 
 class UserRepository : AbsRepository<Long, User, Users>(Users) {
-
-
-    fun find(ex: SqlExpressionBuilder): List<User> {
-        TODO("Not yet implemented")
-    }
-
     override fun new(vo: User): User {
         TODO("Not yet implemented")
     }
 
-
     override fun relationObjectMapping(it: ResultRow): User {
-        TODO("Not yet implemented")
+        val user = User(it[Users.name], it[Users.password], it[Users.email], it[Users.permission])
+        user.id = it[Users.id].value
+        return user
     }
 
     override fun update(vo: User): User {
         TODO("Not yet implemented")
     }
-
-    fun update(where: SqlExpressionBuilder.() -> Op<Boolean>, body: Users.(UpdateStatement) -> Unit) {
-        TODO("Not yet implemented")
-    }
-
 }
 
-class PasswordEncoder : BCryptPasswordEncoder()
-class UserService(private val userRepository: UserRepository) {
-    fun getUser(id: Long): User? {
-        TODO("Not yet implemented")
-    }
-
-    fun updateUser(id: Long, updateUserDTO: UpdateUserDTO): User {
-        TODO("Not yet implemented")
-    }
-
-    fun deleteUser(id: Long?): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    fun createUser(newUserDTO: NewUserDTO): User {
-        TODO("Not yet implemented")
-    }
-
-    fun getUsers(offset: Long = 0, limit: Int? = null): List<User> {
-        TODO("Not yet implemented")
-    }
-}
+class UniqueKeyConflictAssertion(val field: String, val value: Any)
+    : Exception(String.format("Querying failed caused by UniqueKeyConflict\nkey | %s\nvalue : %s", field, value.toString()))
