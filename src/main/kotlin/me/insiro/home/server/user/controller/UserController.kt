@@ -1,6 +1,6 @@
 package me.insiro.home.server.user.controller
 
-import me.insiro.home.server.application.exception.UserNotFoundException
+import me.insiro.home.server.user.exception.UserNotFoundException
 import me.insiro.home.server.user.UserService
 import me.insiro.home.server.user.dto.NewUserDTO
 import me.insiro.home.server.user.dto.UpdateUserDTO

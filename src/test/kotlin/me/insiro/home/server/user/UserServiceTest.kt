@@ -1,14 +1,14 @@
 package me.insiro.home.server.user
 
 import me.insiro.home.server.application.AbsRepository
-import me.insiro.home.server.application.exception.AbsException
-import me.insiro.home.server.application.exception.UserNotFoundException
 import me.insiro.home.server.testUtils.AbsDataBaseTest
 import me.insiro.home.server.user.dto.NewUserDTO
 import me.insiro.home.server.user.dto.UpdateUserDTO
 import me.insiro.home.server.user.dto.UserRole
 import me.insiro.home.server.user.entity.User
 import me.insiro.home.server.user.entity.Users
+import me.insiro.home.server.user.exception.UserConflictExcept
+import me.insiro.home.server.user.exception.UserNotFoundException
 import me.insiro.home.server.user.utils.AuthPasswordProvider
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -23,7 +23,6 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.context.annotation.Description
-import org.springframework.http.HttpStatus
 import java.time.LocalDateTime
 
 @ExtendWith(MockitoExtension::class)
@@ -137,7 +136,7 @@ class UserRepository : AbsRepository<Long, User, Users>(Users) {
                 it[permission] = vo.permission
                 it[createdAt] = vo.createdAt
             }
-        } ?: throw UserInsertFailedException(vo)
+        }
         val updated = vo.copy()
         updated.id = id.value
         return updated
@@ -161,9 +160,3 @@ class UserRepository : AbsRepository<Long, User, Users>(Users) {
         findById(id)!!
     }
 }
-
-abstract class QueryFailedException(status: HttpStatus, msg: String) : AbsException(status, msg)
-class UserConflictExcept(name: String) : QueryFailedException(HttpStatus.CONFLICT, "User Name Conflict ( ${name})")
-class UserInsertFailedException(user: User) : QueryFailedException(HttpStatus.INTERNAL_SERVER_ERROR,
-        "Insertion Failed on (name : ${user.name}, password : ${user.hashedPassword}, email : ${user.email})"
-)

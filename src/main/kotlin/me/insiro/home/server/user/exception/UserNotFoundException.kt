@@ -1,5 +1,6 @@
-package me.insiro.home.server.application.exception
+package me.insiro.home.server.user.exception
 
+import me.insiro.home.server.application.exception.AbsException
 import org.springframework.http.HttpStatus
 
 class UserNotFoundException : AbsException {
