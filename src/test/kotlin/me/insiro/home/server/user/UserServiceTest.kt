@@ -118,5 +118,20 @@ class UserServiceTest : AbsDataBaseTest(arrayListOf(Users)) {
         val users = userService.getUsers()
         assertEquals(1, users.size)
     }
+
+    @Test
+    fun loadUserByUsername() {
+        val details = userService.loadUserByUsername(user.name)
+        assertNotNull(details)
+        details!!
+        assertEquals( user.name, details.username )
+        assertEquals( user.hashedPassword,details.password )
+
+        assertEquals(user.name , details.user.name)
+        assertEquals(user.email , details.user.email)
+        assertEquals(user.id , details.user.id)
+
+
+    }
 }
 
