@@ -1,20 +1,26 @@
 package me.insiro.home.server.user.controller
 
+import jakarta.servlet.http.HttpServletRequest
 import me.insiro.home.server.testUtils.AbsControllerTest
 import me.insiro.home.server.user.UserService
 import me.insiro.home.server.user.dto.SignInDTO
 import me.insiro.home.server.user.dto.UserDTO
+import me.insiro.home.server.user.dto.UserRole
 import me.insiro.home.server.user.entity.User
 import me.insiro.home.server.user.utils.AuthenticateProvider
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
+import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.junit.jupiter.MockitoExtension
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -38,6 +44,10 @@ class AuthControllerTest : AbsControllerTest("/auth") {
         private val user = User("testUser", passwordEncoder.encode(USER_PWD), "email", -1)
     }
 
+    init {
+        user.id = 1L
+    }
+
     @BeforeEach
     override fun init() {
         val authenticateProvider = AuthenticateProvider(userService, passwordEncoder)
@@ -49,6 +59,7 @@ class AuthControllerTest : AbsControllerTest("/auth") {
     @Test
     fun testSignInAndGetUserInfo() {
         val signDto = SignInDTO(USER_NAME, USER_PWD)
+        Mockito.`when`(userService.loadUserByUsername(USER_NAME)).thenReturn(AuthDetail(user))
         mockMvc.perform(
                 MockMvcRequestBuilders.post("/auth")
                         .content(gson.toJson(signDto))
@@ -79,13 +90,31 @@ class AuthControllerTest : AbsControllerTest("/auth") {
 @RequestMapping("auth")
 class AuthController(private val authenticateProvider: AuthenticateProvider) {
     @GetMapping
-    fun getSignedUser(): ResponseEntity<UserDTO> {
-        TODO("Not yet implemented")
+    fun getSignedUser(): ResponseEntity<*> {
+        val authentication = SecurityContextHolder.getContext().authentication
+        if (authentication != null && authentication.isAuthenticated) {
+            val principal = authentication.principal
+            if (principal is AuthDetail) {
+                val user = UserDTO.fromUser(principal.user)
+                return ResponseEntity(user, HttpStatus.OK)
+            }
+        }
+        return ResponseEntity("Not Authenticated", HttpStatus.UNAUTHORIZED)
     }
 
     @PostMapping
-    fun singIn(): ResponseEntity<UserDTO> {
-        TODO("Not yet implemented")
+    fun singIn(@RequestBody signInDTO: SignInDTO, request: HttpServletRequest): ResponseEntity<UserDTO> {
+        val authentication = authenticateProvider.authenticate(
+                UsernamePasswordAuthenticationToken(
+                        signInDTO.name,
+                        signInDTO.password
+                )
+        )
+        val context = SecurityContextHolder.createEmptyContext()
+        context.authentication = authentication
+        SecurityContextHolder.setContext(context)
+        val detail = authentication.principal as AuthDetail
+        return ResponseEntity(UserDTO.fromUser(detail.user), HttpStatus.OK)
     }
 
     @DeleteMapping
@@ -97,7 +126,9 @@ class AuthController(private val authenticateProvider: AuthenticateProvider) {
 
 class AuthDetail(val user: User) : UserDetails {
     override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
-        TODO("Not yet implemented")
+        val roles = UserRole.fromPermissionKey(user.permission)
+        val authorities = roles.map { GrantedAuthority(it::name) }.toMutableList()
+        return authorities
     }
 
 
