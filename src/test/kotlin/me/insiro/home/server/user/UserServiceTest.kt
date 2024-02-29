@@ -7,7 +7,6 @@ import me.insiro.home.server.user.dto.UserRole
 import me.insiro.home.server.user.entity.User
 import me.insiro.home.server.user.entity.Users
 import me.insiro.home.server.user.exception.UserConflictExcept
-import me.insiro.home.server.user.utils.AuthPasswordProvider
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -18,12 +17,14 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.context.annotation.Description
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.crypto.password.PasswordEncoder
 import java.time.LocalDateTime
 
 @ExtendWith(MockitoExtension::class)
 class UserServiceTest : AbsDataBaseTest(arrayListOf(Users)) {
     private val userRepository = UserRepository()
-    private val passwordEncoder = AuthPasswordProvider()
+    private val passwordEncoder:PasswordEncoder = BCryptPasswordEncoder()
     private val userService = UserService(userRepository, passwordEncoder)
 
     private lateinit var user: User
