@@ -24,7 +24,7 @@ import java.time.LocalDateTime
 @ExtendWith(MockitoExtension::class)
 class UserServiceTest : AbsDataBaseTest(arrayListOf(Users)) {
     private val userRepository = UserRepository()
-    private val passwordEncoder:PasswordEncoder = BCryptPasswordEncoder()
+    private val passwordEncoder: PasswordEncoder = BCryptPasswordEncoder()
     private val userService = UserService(userRepository, passwordEncoder)
 
     private lateinit var user: User
@@ -105,7 +105,7 @@ class UserServiceTest : AbsDataBaseTest(arrayListOf(Users)) {
 
         assertEquals(newUserDTO.name, created.name)
         assertEquals(newUserDTO.email, created.email)
-        assertEquals(UserRole.ROLE_READ_ONLY.key, created.permission)
+        assertEquals(UserRole.ROLE_USER.key, created.permission)
 
         assertEquals(LocalDateTime.now().month, created.createdAt.month)
         assertTrue(passwordEncoder.matches(newUserDTO.password, created.hashedPassword))
@@ -124,12 +124,12 @@ class UserServiceTest : AbsDataBaseTest(arrayListOf(Users)) {
         val details = userService.loadUserByUsername(user.name)
         assertNotNull(details)
         details!!
-        assertEquals( user.name, details.username )
-        assertEquals( user.hashedPassword,details.password )
+        assertEquals(user.name, details.username)
+        assertEquals(user.hashedPassword, details.password)
 
-        assertEquals(user.name , details.user.name)
-        assertEquals(user.email , details.user.email)
-        assertEquals(user.id , details.user.id)
+        assertEquals(user.name, details.user.name)
+        assertEquals(user.email, details.user.email)
+        assertEquals(user.id, details.user.id)
 
 
     }

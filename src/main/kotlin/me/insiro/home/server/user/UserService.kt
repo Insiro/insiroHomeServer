@@ -48,7 +48,7 @@ class UserService(private val userRepository: UserRepository, private val passwo
                 newUserDTO.name,
                 passwordEncoder.encode(newUserDTO.password),
                 newUserDTO.email,
-                UserRole.ROLE_READ_ONLY.key,
+                UserRole.ROLE_USER.key
         ))
     }
 

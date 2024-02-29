@@ -76,7 +76,7 @@ class UserControllerTest : AbsControllerTest("/users") {
                 .andExpect { status().isOk }
                 .andExpect { jsonPath("$.name").value(newUserDTO.name) }
                 .andExpect { jsonPath("$.email").value(newUserDTO.email) }
-                .andExpect { jsonPath("$.role").value(arrayOf(UserRole.ROLE_READ_ONLY)) }
+                .andExpect { jsonPath("$.role").value(arrayOf(UserRole.ROLE_USER))}
     }
 }
 
