@@ -2,29 +2,48 @@ package me.insiro.home.server.user
 
 import me.insiro.home.server.user.dto.NewUserDTO
 import me.insiro.home.server.user.dto.UpdateUserDTO
+import me.insiro.home.server.user.dto.UserRole
 import me.insiro.home.server.user.entity.User
-import org.springframework.security.crypto.password.PasswordEncoder
+import me.insiro.home.server.user.utils.AuthPasswordProvider
+import org.jetbrains.exposed.sql.transactions.transaction
+import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.stereotype.Service
 
 @Service
-class UserService(val userRepository: UserRepository, val passwordEncoder: PasswordEncoder){
+class UserService(private val userRepository: UserRepository, private val passwordEncoder: AuthPasswordProvider) : UserDetailsService {
     fun getUser(id: Long): User? {
-        TODO("Not yet implemented")
+        return userRepository.findById(id)
     }
 
     fun updateUser(id: Long, updateUserDTO: UpdateUserDTO): User? {
-        TODO("Not yet implemented")
+        return userRepository.update(id) {
+            updateUserDTO.name?.let { value -> it[name] = value }
+            updateUserDTO.email?.let { value -> it[email] = value }
+            updateUserDTO.password?.let { value -> it[password] = passwordEncoder.encode(value) }
+        }
     }
 
-    fun deleteUser(id: Long?): Boolean {
-        TODO("Not yet implemented")
+    fun deleteUser(id: Long): Boolean= transaction {
+        userRepository.deleteById(id)
     }
 
     fun createUser(newUserDTO: NewUserDTO): User {
-        TODO("Not yet implemented")
+        val ret =  userRepository.new(User(
+                newUserDTO.name,
+                passwordEncoder.encode(newUserDTO.password),
+                newUserDTO.email,
+                UserRole.ROLE_READ_ONLY.key,
+        ))
+        println(ret)
+        return ret
     }
 
-    fun getUsers(offset: Int = 0, limit: Long?= null): List<User> {
+    fun getUsers(offset: Int = 0, limit: Long? = null): List<User> {
+        return userRepository.find(offset, limit)
+    }
+
+    override fun loadUserByUsername(username: String?): UserDetails {
         TODO("Not yet implemented")
     }
 }

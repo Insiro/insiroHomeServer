@@ -1,6 +1,8 @@
 package me.insiro.home.server.user
 
 import me.insiro.home.server.application.AbsRepository
+import me.insiro.home.server.application.exception.AbsException
+import me.insiro.home.server.application.exception.UserNotFoundException
 import me.insiro.home.server.testUtils.AbsDataBaseTest
 import me.insiro.home.server.user.dto.NewUserDTO
 import me.insiro.home.server.user.dto.UpdateUserDTO
@@ -9,9 +11,11 @@ import me.insiro.home.server.user.entity.User
 import me.insiro.home.server.user.entity.Users
 import me.insiro.home.server.user.utils.AuthPasswordProvider
 import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.update
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -19,6 +23,7 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.context.annotation.Description
+import org.springframework.http.HttpStatus
 import java.time.LocalDateTime
 
 @ExtendWith(MockitoExtension::class)
@@ -35,6 +40,7 @@ class UserServiceTest : AbsDataBaseTest(arrayListOf(Users)) {
         user = User("testName", "testPwd", "test@example.com", 0b1)
         user.id = insertUser(user)
     }
+
     private fun insertUser(user: User): Long = transaction {
         Users.insertAndGetId {
             it[name] = user.name
@@ -93,7 +99,7 @@ class UserServiceTest : AbsDataBaseTest(arrayListOf(Users)) {
     fun createUser() {
         // Test Name Conflict
         var newUserDTO = NewUserDTO(user.name, user.hashedPassword, user.email)
-        assertThrows<UniqueKeyConflictAssertion> { userService.createUser(newUserDTO) }
+        assertThrows<UserConflictExcept> { userService.createUser(newUserDTO) }
 
 
         newUserDTO = NewUserDTO(user.name + "_New", "testPwd", "test@example.com")
@@ -121,7 +127,20 @@ class UserServiceTest : AbsDataBaseTest(arrayListOf(Users)) {
 
 class UserRepository : AbsRepository<Long, User, Users>(Users) {
     override fun new(vo: User): User {
-        TODO("Not yet implemented")
+        val id = transaction {
+            if (Users.select(Users.name).where { Users.name eq vo.name }.count() != 0L)
+                throw UserConflictExcept(vo.name)
+            Users.insertAndGetId {
+                it[name] = vo.name
+                it[email] = vo.email
+                it[password] = vo.hashedPassword
+                it[permission] = vo.permission
+                it[createdAt] = vo.createdAt
+            }
+        } ?: throw UserInsertFailedException(vo)
+        val updated = vo.copy()
+        updated.id = id.value
+        return updated
     }
 
     override fun relationObjectMapping(it: ResultRow): User {
@@ -130,10 +149,21 @@ class UserRepository : AbsRepository<Long, User, Users>(Users) {
         return user
     }
 
-    override fun update(vo: User): User {
-        TODO("Not yet implemented")
+    override fun update(vo: User): User = transaction {
+        val id = vo.id ?: throw UserNotFoundException(id = null)
+        Users.update {
+            this.id eq id
+            it[permission] = vo.permission
+            it[password] = vo.hashedPassword
+            it[name] = vo.name
+            it[email] = vo.email
+        }
+        findById(id)!!
     }
 }
 
-class UniqueKeyConflictAssertion(val field: String, val value: Any)
-    : Exception(String.format("Querying failed caused by UniqueKeyConflict\nkey | %s\nvalue : %s", field, value.toString()))
+abstract class QueryFailedException(status: HttpStatus, msg: String) : AbsException(status, msg)
+class UserConflictExcept(name: String) : QueryFailedException(HttpStatus.CONFLICT, "User Name Conflict ( ${name})")
+class UserInsertFailedException(user: User) : QueryFailedException(HttpStatus.INTERNAL_SERVER_ERROR,
+        "Insertion Failed on (name : ${user.name}, password : ${user.hashedPassword}, email : ${user.email})"
+)
