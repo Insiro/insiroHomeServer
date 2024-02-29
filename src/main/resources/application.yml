@@ -8,3 +8,6 @@ spring:
     driver-class-name: org.h2.Driver
   exposed:
     generate-ddl: true
+server:
+  error:
+    include-stacktrace: never
