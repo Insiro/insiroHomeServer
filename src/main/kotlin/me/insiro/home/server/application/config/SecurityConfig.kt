@@ -4,6 +4,7 @@ import me.insiro.home.server.user.UserService
 import me.insiro.home.server.user.utils.AuthenticateProvider
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
@@ -11,7 +12,11 @@ import org.springframework.security.web.SecurityFilterChain
 
 @Configuration
 @EnableWebSecurity
-class SecurityConfig(private val userService: UserService, private val authenticateProvider: AuthenticateProvider) {
+@EnableMethodSecurity(securedEnabled = true)
+class SecurityConfig(
+        private val userService: UserService,
+        private val authenticateProvider: AuthenticateProvider,
+) {
     @Bean
     fun SecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
@@ -22,6 +27,10 @@ class SecurityConfig(private val userService: UserService, private val authentic
                 .csrf { it.disable() }
                 .authorizeHttpRequests {
                     it.requestMatchers("/**").permitAll().anyRequest().authenticated()
+                }
+                .exceptionHandling {
+                    it.accessDeniedHandler(CustomAccessDeniedHandler())
+                            .authenticationEntryPoint(CustomAuthenticationEntryPoint())
                 }
 
         return http.build()
