@@ -35,7 +35,8 @@ class AbsRepositoryTest : AbsDataBaseTest(listOf(TestEntities)) {
     ) : EntityVO<Int>()
 
 
-    class TestRepository : AbsRepository<Int, TestVO, TestEntities>(TestEntities) {
+    class TestRepository : AbsRepository<Int, TestVO, TestEntities> {
+        override val table = TestEntities
         override fun relationObjectMapping(it: ResultRow): TestVO {
             val vo = TestVO(it[TestEntities.value])
             vo.id = it[TestEntities.id].value
@@ -57,7 +58,7 @@ class AbsRepositoryTest : AbsDataBaseTest(listOf(TestEntities)) {
     @BeforeEach
     fun resetTestState() {
         resetDataBase()
-        testEntity = insert((Math.random()*10).toInt())
+        testEntity = insert((Math.random() * 10).toInt())
     }
 
     private fun insert(value: Int): TestEntity = transaction {
@@ -85,11 +86,11 @@ class AbsRepositoryTest : AbsDataBaseTest(listOf(TestEntities)) {
 
     @Test
     fun update() {
-        val updated = testRepository.update{
+        val updated = testRepository.update {
             this.id eq testEntity.id
-            it[id] = DaoEntityID(testEntity.id.value+1, TestEntities)
+            it[id] = DaoEntityID(testEntity.id.value + 1, TestEntities)
         }
-        val updatedEntity = transaction { TestEntity.findById(testEntity.id.value+1) }
+        val updatedEntity = transaction { TestEntity.findById(testEntity.id.value + 1) }
 
         assertEquals(1, updated)
         assertNotNull(updatedEntity)
@@ -101,6 +102,7 @@ class AbsRepositoryTest : AbsDataBaseTest(listOf(TestEntities)) {
         val entity = transaction { TestEntity.findById(testEntity.id.value) }
         assertNull(entity)
     }
+
     @Test
     fun deleteByVO() {
         val vo = TestVO(1)

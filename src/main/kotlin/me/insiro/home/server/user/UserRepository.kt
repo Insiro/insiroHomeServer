@@ -13,7 +13,8 @@ import org.jetbrains.exposed.sql.update
 import org.springframework.stereotype.Repository
 
 @Repository
-class UserRepository : AbsRepository<Long, User, Users>(Users) {
+class UserRepository : AbsRepository<Long, User, Users> {
+    override val table = Users
     override fun new(vo: User): User {
         val id = transaction {
             if (Users.select(Users.name).where { Users.name eq vo.name }.count() != 0L)
