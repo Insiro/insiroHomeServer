@@ -1,16 +1,30 @@
 package me.insiro.home.server.file.repository
 
-import me.insiro.home.server.file.entity.File
+import me.insiro.home.server.file.vo.*
+import org.springframework.web.multipart.MultipartFile
 
 
-abstract class AbsFileRepository {
-    abstract fun find(headerVO: File.FileHeaderVO): File?
-    abstract fun findAll(): List<File.FileHeaderVO>
-    abstract fun findAllByName(fileName: String): List<File.FileHeaderVO>?
-    abstract fun findAllByDomain(domain: String): List<File.FileHeaderVO>?
-    abstract fun save(contentVO: File): File
+abstract class AbsFileRepository(val locaton: String) {
+    //over domain
+    abstract fun getCollections(domain: String): List<IFileCollection>
 
-    abstract fun update(contentVO: File.FileContentVO): File.FileContentVO
-    abstract fun delete(headerVO: File.FileHeaderVO)
+    //over collection
+    abstract fun find(collection: IFileCollection): List<IFileItem>
 
+    abstract fun get(fileVO: IFileItem): IFileItem?
+
+    //by item
+    abstract fun load(fileVO: VOTextFileItem): VOTextFileItem?
+    fun save(fileVO: IFileItem, data:Any): IFileItem {
+        return when(fileVO){
+            is VOFileItem -> TODO()
+            is VOMediaFileItem -> {save(fileVO, data as MultipartFile)}
+            is VOTextFileItem -> {save(fileVO , data as String)}
+        }
+    }
+    fun save(textVO: VOTextFileItem):VOTextFileItem{return save(textVO, textVO.content?:"")}
+    abstract fun save(contentVO: IFileItem, data: MultipartFile):IFileItem
+    abstract fun save(textVO: VOTextFileItem, data: String):VOTextFileItem
+    abstract fun delete(fileVO: IFileItem): Boolean
+    abstract fun append(textVO: VOTextFileItem, content: String): VOTextFileItem
 }
