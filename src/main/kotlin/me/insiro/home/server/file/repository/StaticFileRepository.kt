@@ -1,14 +1,13 @@
 package me.insiro.home.server.file.repository
 
 import me.insiro.home.server.file.exception.DirCreateException
-import me.insiro.home.server.file.exception.WrongFileException
 import me.insiro.home.server.file.vo.*
 import org.springframework.web.multipart.MultipartFile
 import java.nio.file.AccessDeniedException
 import java.nio.file.Path
 import kotlin.io.path.*
 
-class StaticFileRepository(location: String) : AbsFileRepository(location) {
+class StaticFileRepository(override val location: String) : IFileRepository{
     private val path: Path = Path(location).toRealPath()
     private fun path(file: IFileCollection, mkdir: Boolean = false): Path {
         var filePath = path.resolve(file.domain).resolve(file.collection)
@@ -82,10 +81,10 @@ class StaticFileRepository(location: String) : AbsFileRepository(location) {
         return contentVO
     }
 
-    override fun append(textVO: VOTextFileItem, content: String): VOTextFileItem {
+    override fun append(textVO: VOTextFileItem, content: String): VOTextFileItem? {
         val file = path(textVO).toFile()
         if (file.isFile.not())
-            throw WrongFileException(file)
+            return null
         file.appendText(content)
         return textVO.copy(content = textVO.content + content)
     }

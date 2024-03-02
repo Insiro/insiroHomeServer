@@ -70,11 +70,17 @@ class StaticFileRepositoryTest {
 
 
     }
-
+    @Test
+    fun appendOnNotExistFile(){
+        val collection = getCollectionInstance()
+        val file = FileItemFactory.new(collection, "file1.txt") as VOTextFileItem
+        repository.append(file, "")
+        val appended = repository.load(file)
+        assertNull(appended)
+    }
     @Test
     fun append() {
         val collection = getCollectionInstance()
-
         val file1 = FileItemFactory.new(collection, "file1.txt")
         val saved = repository.save(file1, "data") as VOTextFileItem
         val appendedTxt = "\nappend"
