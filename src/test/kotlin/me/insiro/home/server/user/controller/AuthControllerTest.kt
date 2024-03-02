@@ -32,12 +32,9 @@ class AuthControllerTest : AbsControllerTest("/auth") {
         private val passwordEncoder: PasswordEncoder = BCryptPasswordEncoder()
         private const val USER_PWD = "testPwd"
         private const val USER_NAME = "testUser"
-        private val user = User("testUser", passwordEncoder.encode(USER_PWD), "email", -1)
+        private val user = User("testUser", passwordEncoder.encode(USER_PWD), "email", -1, User.Id(1))
     }
 
-    init {
-        user.id = 1L
-    }
 
     @BeforeEach
     override fun init() {
@@ -52,26 +49,26 @@ class AuthControllerTest : AbsControllerTest("/auth") {
         val signDto = SignInDTO(USER_NAME, USER_PWD)
         Mockito.`when`(userService.loadUserByUsername(USER_NAME)).thenReturn(AuthDetail(user))
         mockMvc.perform(
-                MockMvcRequestBuilders.post("/auth")
-                        .content(gson.toJson(signDto))
-                        .contentType(MediaType.APPLICATION_JSON)
+            MockMvcRequestBuilders.post("/auth")
+                .content(gson.toJson(signDto))
+                .contentType(MediaType.APPLICATION_JSON)
         )
-                .andExpect { status().isOk() }
-                .andExpect { jsonPath("$.name").value(USER_NAME) }
-                .andExpect { jsonPath("$.email").value(user.email) }
+            .andExpect { status().isOk() }
+            .andExpect { jsonPath("$.name").value(USER_NAME) }
+            .andExpect { jsonPath("$.email").value(user.email) }
 
         mockMvc.perform(MockMvcRequestBuilders.get(uri))
-                .andExpect { status().isOk }
-                .andExpect { jsonPath("$.name").value(USER_NAME) }
-                .andExpect { jsonPath("$.email").value(user.email) }
+            .andExpect { status().isOk }
+            .andExpect { jsonPath("$.name").value(USER_NAME) }
+            .andExpect { jsonPath("$.email").value(user.email) }
     }
 
     @Test
     @WithMockUser(username = USER_NAME, password = USER_PWD, roles = ["ROLE_ADMIN"])
     fun testGetUserInfoWithAuthenticatedUser() {
         mockMvc.perform(MockMvcRequestBuilders.get(uri))
-                .andExpect { status().isOk }
-                .andExpect { jsonPath("$.name").value(user.name) }
-                .andExpect { jsonPath("$.email").value(user.email) }
+            .andExpect { status().isOk }
+            .andExpect { jsonPath("$.name").value(user.name) }
+            .andExpect { jsonPath("$.email").value(user.email) }
     }
 }

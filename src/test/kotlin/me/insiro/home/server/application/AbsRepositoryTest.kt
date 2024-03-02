@@ -31,16 +31,20 @@ class AbsRepositoryTest : AbsDataBaseTest(listOf(TestEntities)) {
     }
 
     data class TestVO(
-            var value: Int,
-    ) : EntityVO<Int>()
+        var value: Int,
+        override val id: Id? = null,
+    ) : EntityVO<Int>() {
+        @JvmInline
+        value class Id(override val value: Int) : EntityVO.Id<Int> {
+            constructor(id: EntityID<Int>) : this(id.value)
+        }
+    }
 
-
-    class TestRepository : AbsRepository<Int, TestVO, TestEntities> {
+    class TestRepository : AbsRepository<Int, TestEntities, TestVO, TestVO.Id> {
         override val table = TestEntities
         override fun relationObjectMapping(it: ResultRow): TestVO {
-            val vo = TestVO(it[TestEntities.value])
-            vo.id = it[TestEntities.id].value
-            return vo
+            val id = TestVO.Id(it[TestEntities.id].value)
+            return TestVO(it[TestEntities.value], id = id)
         }
 
         override fun new(vo: TestVO): TestVO {
@@ -67,10 +71,10 @@ class AbsRepositoryTest : AbsDataBaseTest(listOf(TestEntities)) {
 
     @Test
     fun findById() = transaction {
-        val vo = testRepository.findById(testEntity.id.value)
+        val vo = testRepository.findById(TestVO.Id(testEntity.id))
         assertNotNull(vo)
-        vo!!
-        assertEquals(testEntity.id.value, vo.id)
+        vo!!.id
+        assertEquals(testEntity.id.value, vo.id!!.value)
         assertEquals(testEntity.value, vo.value)
     }
 
@@ -78,7 +82,7 @@ class AbsRepositoryTest : AbsDataBaseTest(listOf(TestEntities)) {
     fun find() {
         val voList = testRepository.find()
         assertEquals(1, voList.size)
-        assertEquals(testEntity.id.value, voList[0].id)
+        assertEquals(testEntity.id.value, voList[0].id!!.value)
         assertEquals(testEntity.value, voList[0].value)
         val voList2 = testRepository.find(offset = 2)
         assertEquals(0, voList2.size)
@@ -98,24 +102,23 @@ class AbsRepositoryTest : AbsDataBaseTest(listOf(TestEntities)) {
 
     @Test
     fun deleteById() {
-        testRepository.deleteById(testEntity.id.value)
-        val entity = transaction { TestEntity.findById(testEntity.id.value) }
+        testRepository.delete(TestVO.Id(testEntity.id))
+        val entity = transaction { TestEntity.findById(testEntity.id) }
         assertNull(entity)
     }
 
     @Test
     fun deleteByVO() {
-        val vo = TestVO(1)
-        vo.id = testEntity.id.value
+        val vo = TestVO(1, id = TestVO.Id(testEntity.id))
         testRepository.delete(vo)
-        val entity = transaction { TestEntity.findById(testEntity.id.value) }
+        val entity = transaction { TestEntity.findById(testEntity.id) }
         assertNull(entity)
     }
 
     @Test
     fun deleteByExpression() {
         testRepository.delete { this.id eq testEntity.id }
-        val entity = transaction { TestEntity.findById(testEntity.id.value) }
+        val entity = transaction { TestEntity.findById(testEntity.id) }
         assertNull(entity)
     }
 }

@@ -26,14 +26,14 @@ class UserServiceTest : AbsDataBaseTest(arrayListOf(Users)) {
     private val userRepository = UserRepository()
     private val passwordEncoder: PasswordEncoder = BCryptPasswordEncoder()
     private val userService = UserService(userRepository, passwordEncoder)
-
+    private val userPwd= "testPwd"
     private lateinit var user: User
 
     @BeforeEach
     fun init() {
         resetDataBase()
-        user = User("testName", "testPwd", "test@example.com", 0b1)
-        user.id = insertUser(user)
+        user = User("testName", passwordEncoder.encode(userPwd), "test@example.com", 0b1)
+        user = user.copy(id = User.Id( insertUser(user)))
     }
 
     private fun insertUser(user: User): Long = transaction {
@@ -49,15 +49,15 @@ class UserServiceTest : AbsDataBaseTest(arrayListOf(Users)) {
     @Test
     @Description("Test Get User With DataBase")
     fun getUser() {
-        val uid = user.id!!
+        val uid = user.id!!.value
         //Return Null when Wrong ID is requested
-        assertNull(userService.getUser(uid + 5))
+        assertNull(userService.getUser(User.Id(uid + 5)))
 
         //Return User's VO when
-        val gUser = userService.getUser(uid)
+        val gUser = userService.getUser(user.id!!)
         assertNotNull(gUser)
         gUser!!
-        assertEquals(uid, gUser.id)
+        assertEquals(uid, gUser.id!!.value)
         assertEquals(user.name, gUser.name)
         assertEquals(user.email, gUser.email)
         assertEquals(user.hashedPassword, gUser.hashedPassword)
@@ -84,7 +84,7 @@ class UserServiceTest : AbsDataBaseTest(arrayListOf(Users)) {
     fun deleteUser() {
         assertEquals(userService.deleteUser(user.id!!), true)
         val nUser = transaction {
-            Users.selectAll().where { Users.id eq user.id }.count()
+            Users.selectAll().where { Users.id eq user.id!!.value }.count()
         }
         assertEquals(nUser, 0)
     }
@@ -98,8 +98,6 @@ class UserServiceTest : AbsDataBaseTest(arrayListOf(Users)) {
 
 
         newUserDTO = NewUserDTO(user.name + "_New", "testPwd", "test@example.com")
-        user.hashedPassword = passwordEncoder.encode(newUserDTO.password)
-        user.id = 1
 
         val created = userService.createUser(newUserDTO)
 
