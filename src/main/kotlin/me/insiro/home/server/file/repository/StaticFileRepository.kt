@@ -1,40 +1,97 @@
 package me.insiro.home.server.file.repository
 
-import me.insiro.home.server.file.vo.IFileCollection
-import me.insiro.home.server.file.vo.IFileItem
-import me.insiro.home.server.file.vo.VOTextFileItem
+import me.insiro.home.server.file.exception.DirCreateException
+import me.insiro.home.server.file.exception.WrongFileException
+import me.insiro.home.server.file.vo.*
 import org.springframework.web.multipart.MultipartFile
+import java.nio.file.AccessDeniedException
+import java.nio.file.Path
+import kotlin.io.path.*
 
 class StaticFileRepository(location: String) : AbsFileRepository(location) {
+    private val path: Path = Path(location).toRealPath()
+    private fun path(file: IFileCollection, mkdir: Boolean = false): Path {
+        var filePath = path.resolve(file.domain).resolve(file.collection)
+        if (mkdir && !filePath.exists())
+            filePath.createDirectories()
+        if (file is IFileItem)
+            filePath = filePath.resolve(file.name)
+        return filePath
+    }
+
+    init {
+        try {
+            if (path.notExists())
+                path.createDirectories()
+            else if (path.isDirectory().not())
+                throw AccessDeniedException(path.toString())
+        } catch (e: AccessDeniedException) {
+            throw DirCreateException(path)
+        }
+
+    }
+
+    //over domain
     override fun getCollections(domain: String): List<IFileCollection> {
-        TODO("Not yet implemented")
+        val domainDir = path.resolve(domain)
+        val collections = arrayListOf<IFileCollection>()
+        for (collectionDir in domainDir.listDirectoryEntries()) {
+            collections.add(VOFileCollection(domain, collectionDir.name))
+        }
+        return collections
     }
 
+    //over collection
     override fun find(collection: IFileCollection): List<IFileItem> {
-        TODO("Not yet implemented")
+        val collectionDir = path(collection)
+        val files = arrayListOf<IFileItem>()
+        for (item in collectionDir.listDirectoryEntries()) {
+            files.add(FileItemFactory.new(collection, item.toFile()))
+        }
+        return files
     }
 
+    //by item
     override fun get(fileVO: IFileItem): IFileItem? {
-        TODO("Not yet implemented")
+        val file = path(fileVO).toFile()
+        if (file.isFile.not()) return null
+        return FileItemFactory.new(fileVO, file)
     }
 
     override fun load(fileVO: VOTextFileItem): VOTextFileItem? {
-        TODO("Not yet implemented")
-    }
-
-    override fun save(contentVO: IFileItem, data: MultipartFile): IFileItem {
-        TODO("Not yet implemented")
+        val filePath = path(fileVO)
+        val file = filePath.toFile()
+        if (file.isFile.not())
+            return null
+        return fileVO.copy(content = file.readText())
     }
 
     override fun save(textVO: VOTextFileItem, data: String): VOTextFileItem {
-        TODO("Not yet implemented")
+        path(textVO, mkdir = true)
+        val file = path(textVO).toFile()
+        if (!file.exists())
+            file.createNewFile()
+        file.writeText(data)
+        return textVO.copy(content = data)
     }
 
-    override fun delete(fileVO: IFileItem): Boolean {
-        TODO("Not yet implemented")
+    override fun save(contentVO: IFileItem, data: MultipartFile): IFileItem {
+        path(contentVO, mkdir = true)
+        val file = path(contentVO).toFile()
+        data.transferTo(file)
+        return contentVO
     }
 
     override fun append(textVO: VOTextFileItem, content: String): VOTextFileItem {
-        TODO("Not yet implemented")
+        val file = path(textVO).toFile()
+        if (file.isFile.not())
+            throw WrongFileException(file)
+        file.appendText(content)
+        return textVO.copy(content = textVO.content + content)
+    }
+
+    override fun delete(fileVO: IFileItem): Boolean {
+        val filePath = path(fileVO)
+        return filePath.toFile().delete()
     }
 }
