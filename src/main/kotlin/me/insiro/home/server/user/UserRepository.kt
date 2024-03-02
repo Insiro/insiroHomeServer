@@ -13,7 +13,7 @@ import org.jetbrains.exposed.sql.update
 import org.springframework.stereotype.Repository
 
 @Repository
-class UserRepository : AbsRepository<Long, User, Users> {
+class UserRepository : AbsRepository<Long, Users, User, User.Id> {
     override val table = Users
     override fun new(vo: User): User {
         val id = transaction {
@@ -27,21 +27,25 @@ class UserRepository : AbsRepository<Long, User, Users> {
                 it[createdAt] = vo.createdAt
             }
         }
-        val updated = vo.copy()
-        updated.id = id.value
+        val updated = vo.copy(id = User.Id(id))
         return updated
     }
 
     override fun relationObjectMapping(it: ResultRow): User {
-        val user = User(it[Users.name], it[Users.password], it[Users.email], it[Users.permission])
-        user.id = it[Users.id].value
+        val user = User(
+            it[Users.name],
+            it[Users.password],
+            it[Users.email],
+            it[Users.permission],
+            id = User.Id(it[Users.id]),
+            )
         return user
     }
 
     override fun update(vo: User): User = transaction {
         val id = vo.id ?: throw UserNotFoundException(id = null)
         Users.update {
-            this.id eq id
+            this.id eq id.value
             it[permission] = vo.permission
             it[password] = vo.hashedPassword
             it[name] = vo.name
