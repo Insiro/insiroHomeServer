@@ -2,12 +2,16 @@ spring:
   config:
     import: "classpath:env.yml"
   datasource:
-    url: ${db.url}
-    username: ${db.username}
-    password: ${db.password}
+    url: ${DB.url}
+    username: ${DB.username}
+    password: ${DB.password}
     driver-class-name: org.h2.Driver
   exposed:
     generate-ddl: true
 server:
   error:
     include-stacktrace: never
+app:
+  files:
+    storage: local
+    location: B:\temp
