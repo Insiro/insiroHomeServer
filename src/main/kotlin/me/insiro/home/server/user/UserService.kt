@@ -6,15 +6,17 @@ import me.insiro.home.server.user.dto.UpdateUserDTO
 import me.insiro.home.server.user.dto.UserRole
 import me.insiro.home.server.user.entity.User
 import me.insiro.home.server.user.entity.Users
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 
 @Service
-class UserService(private val userRepository: UserRepository, private val passwordEncoder: PasswordEncoder) : UserDetailsService {
+class UserService(
+    private val userRepository: UserRepository,
+    private val passwordEncoder: PasswordEncoder,
+) : UserDetailsService {
 
-    fun getUser(id: Long): User? {
+    fun getUser(id: User.Id): User? {
         return userRepository.findById(id)
     }
 
@@ -31,7 +33,7 @@ class UserService(private val userRepository: UserRepository, private val passwo
         return AuthDetail(user)
     }
 
-    fun updateUser(id: Long, updateUserDTO: UpdateUserDTO): User? {
+    fun updateUser(id: User.Id, updateUserDTO: UpdateUserDTO): User? {
         return userRepository.update(id) {
             updateUserDTO.name?.let { value -> it[name] = value }
             updateUserDTO.email?.let { value -> it[email] = value }
@@ -39,17 +41,19 @@ class UserService(private val userRepository: UserRepository, private val passwo
         }
     }
 
-    fun deleteUser(id: Long): Boolean = transaction {
-        userRepository.deleteById(id)
+    fun deleteUser(id: User.Id): Boolean {
+        return userRepository.delete(id)
     }
 
     fun createUser(newUserDTO: NewUserDTO): User {
-        return userRepository.new(User(
+        return userRepository.new(
+            User(
                 newUserDTO.name,
                 passwordEncoder.encode(newUserDTO.password),
                 newUserDTO.email,
                 UserRole.ROLE_USER.key
-        ))
+            )
+        )
     }
 
     fun getUsers(offset: Int = 0, limit: Long? = null): List<User> {

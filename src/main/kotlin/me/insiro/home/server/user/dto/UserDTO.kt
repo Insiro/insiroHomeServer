@@ -4,7 +4,7 @@ import me.insiro.home.server.user.entity.User
 import java.time.LocalDateTime
 
 data class UserDTO(
-        val id: Long,
+        val id: User.Id,
         val name: String,
         val role: List<UserRole>,
         val email: String,

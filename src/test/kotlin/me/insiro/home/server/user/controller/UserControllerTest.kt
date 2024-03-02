@@ -25,8 +25,7 @@ class UserControllerTest : AbsControllerTest("/users") {
     override fun init() {
         val userController = UserController(mockUserService)
         mockMvc = MockMvcBuilders.standaloneSetup(userController).build()
-        user = User("testName", "testPwd", "test@example.com", 0b1)
-        user.id = 1
+        user = User("testName", "testPwd", "test@example.com", 0b1, User.Id(1))
     }
 
     @Test
