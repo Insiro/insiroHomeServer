@@ -45,7 +45,7 @@ class AuthControllerTest : AbsControllerTest("/auth") {
     }
 
     @Test
-    fun testSignInAndGetUserInfo() {
+    fun `test SignIn and get User Info`() {
         val signDto = SignInDTO(USER_NAME, USER_PWD)
         Mockito.`when`(userService.loadUserByUsername(USER_NAME)).thenReturn(AuthDetail(user))
         mockMvc.perform(
@@ -65,7 +65,7 @@ class AuthControllerTest : AbsControllerTest("/auth") {
 
     @Test
     @WithMockUser(username = USER_NAME, password = USER_PWD, roles = ["ROLE_ADMIN"])
-    fun testGetUserInfoWithAuthenticatedUser() {
+    fun `test Get UserInfo With Authenticated User`() {
         mockMvc.perform(MockMvcRequestBuilders.get(uri))
             .andExpect { status().isOk }
             .andExpect { jsonPath("$.name").value(user.name) }
