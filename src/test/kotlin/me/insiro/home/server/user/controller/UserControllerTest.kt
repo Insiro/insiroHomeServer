@@ -32,7 +32,7 @@ class UserControllerTest : AbsControllerTest("/users") {
     fun getUser() {
         val userDTO = UserDTO.fromUser(user)
         Mockito.`when`(mockUserService.getUser(user.id!!)).thenReturn(user)
-        mockMvc.perform(MockMvcRequestBuilders.get(uri(user.id)))
+        mockMvc.perform(MockMvcRequestBuilders.get(uri(user.id!!)))
                 .andExpect { status().isOk }
                 .andExpect { jsonPath("$.id").value(userDTO.id) }
                 .andExpect { jsonPath("$.name").value(userDTO.name) }
@@ -48,7 +48,7 @@ class UserControllerTest : AbsControllerTest("/users") {
         Mockito.`when`(mockUserService.updateUser(user.id!!, updateUserDTO)).then { user.name = newName; user }.thenReturn(user)
         mockMvc.perform(
                 MockMvcRequestBuilders
-                        .patch(uri(user.id))
+                        .patch(uri(user.id!!))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(gson.toJson(updateUserDTO)))
                 .andExpect { status().isOk }
@@ -60,7 +60,7 @@ class UserControllerTest : AbsControllerTest("/users") {
     @Test
     fun deleteUser() {
         Mockito.`when`(mockUserService.deleteUser(user.id!!)).thenReturn(true)
-        mockMvc.perform(MockMvcRequestBuilders.delete(uri(user.id)))
+        mockMvc.perform(MockMvcRequestBuilders.delete(uri(user.id!!)))
                 .andExpect { status() }
     }
 

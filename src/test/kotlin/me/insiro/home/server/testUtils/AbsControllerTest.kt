@@ -21,9 +21,14 @@ abstract class AbsControllerTest(private val baseUrl: String) {
 
     protected val uri:String
         get() {return baseUrl}
-    fun uri(child: Any? = null): String {
-        child ?: return baseUrl
-        val childString = if( child is EntityVO.Id<*>)child.value.toString() else child.toString()
-        return "$baseUrl/$childString"
+    fun uri(vararg children: Any): String {
+        val strBuilder = StringBuilder(baseUrl)
+        for (child in children){
+            if (child is EntityVO.Id<*>)
+                strBuilder.append("/${child.value}")
+            else
+                strBuilder.append("/$child")
+        }
+        return strBuilder.toString()
     }
 }
