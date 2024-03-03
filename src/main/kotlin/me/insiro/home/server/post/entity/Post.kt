@@ -20,7 +20,6 @@ data class Post(
     var status: Status,
     var authorId: User.Id,
     var category: Category.Id,
-    val comments:List<Comment>  = listOf(),
     override val id: Id? = null,
 ) : BaseEntityVO() {
     @JvmInline
@@ -29,3 +28,11 @@ data class Post(
         constructor(entityID: EntityID<Long>) : this(entityID.value)
     }
 }
+
+data class JoinedPost(
+    var title: String,
+    var status: Status,
+    var author: User,
+    var category: Category,
+    override val id: Post.Id? = null,
+) : BaseEntityVO()
