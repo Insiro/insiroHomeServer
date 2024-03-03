@@ -1,6 +1,7 @@
 package me.insiro.home.server.post.controller
 
 import me.insiro.home.server.application.domain.Status
+import me.insiro.home.server.post.dto.comment.ModifyCommentDTO
 import me.insiro.home.server.post.dto.post.NewPostDTO
 import me.insiro.home.server.post.dto.post.UpdatePostDTO
 import me.insiro.home.server.post.entity.*
@@ -57,14 +58,14 @@ class PostControllerTest : AbsControllerTest("/posts") {
         Mockito.`when`(postService.findPost(post.id!!)).thenReturn(post)
         Mockito.`when`(categoryService.get(category.id!!)).thenReturn(category)
         Mockito.`when`(commentService.findComments(post.id!!)).thenReturn(listOf(comment))
-        mockMvc.perform(MockMvcRequestBuilders.get(uri(post.id)).queryParam("comment", "true"))
+        mockMvc.perform(MockMvcRequestBuilders.get(uri(post.id!!)).queryParam("comment", "true"))
             .andExpect { status().isOk }
             .andExpect { jsonPath("$.status").value(post.status) }
             .andExpect { jsonPath("$.category").value(category) }
             .andExpect { jsonPath("$.title").value(post.title) }
             .andExpect { jsonPath("$.author.id").value(post.author.id) }
             .andDo { println(it.response.contentAsString) }
-        mockMvc.perform(MockMvcRequestBuilders.get(uri(post.id)))
+        mockMvc.perform(MockMvcRequestBuilders.get(uri(post.id!!)))
             .andExpect { status().isOk }
             .andExpect { jsonPath("$.comments").isEmpty }
 
@@ -74,7 +75,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
     fun testDeletePostById() {
         Mockito.`when`(postService.deletePost(post.id!!, user)).thenReturn(true)
         Mockito.`when`(commentService.deleteComment(post.id!!)).thenReturn(1)
-        mockMvc.perform(MockMvcRequestBuilders.delete(uri(post.id))
+        mockMvc.perform(MockMvcRequestBuilders.delete(uri(post.id!!))
             .with {
                 val authentication = UsernamePasswordAuthenticationToken(detail, "", detail.authorities)
                 SecurityContextHolder.getContext().authentication = authentication
@@ -93,7 +94,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
         Mockito.`when`(categoryService.get(cate2.name)).thenReturn(cate2)
 
         mockMvc.perform(
-            MockMvcRequestBuilders.patch(uri(post.id))
+            MockMvcRequestBuilders.patch(uri(post.id!!))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(gson.toJson(updateDTO))
                 .with {
@@ -134,6 +135,57 @@ class PostControllerTest : AbsControllerTest("/posts") {
             .andExpect { jsonPath("$.comments").isArray }
     }
 
+    @Test
+    fun `test add comment with signed user`() {
+        val signedDTO = ModifyCommentDTO.Signed("content")
+        Mockito.`when`(postService.findPost(post.id!!)).thenReturn(post)
+        Mockito.`when`(commentService.addComment(post.id!!, signedDTO, user.id!!)).thenReturn(comment)
+        mockMvc.perform(
+            MockMvcRequestBuilders.post(uri(post.id!!, "comments", "signed"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(gson.toJson(signedDTO))
+                .with {
+                    val authentication = UsernamePasswordAuthenticationToken(detail, "", detail.authorities)
+                    SecurityContextHolder.getContext().authentication = authentication
+                    it
+                }
+        )
+            .andExpect { status().isOk }
+            .andExpect { jsonPath("$.author").value(comment.author) }
+            .andExpect { jsonPath("$.content").value(comment.content) }
+            .andExpect { jsonPath("$.postId").value(comment.postId) }
+            .andExpect { jsonPath("$.parentId").value(comment.parentId) }
+    }
+
+    @Test
+    fun `test add comment with anonymous user`() {
+        val anonymousDTO = ModifyCommentDTO.Anonymous("content", "testAnonymous", "testPwd")
+        val anonyComment = Comment(
+            anonymousDTO.content,
+            post.id!!,
+            null,
+            CommentUserInfo.Anonymous(anonymousDTO.name, anonymousDTO.password),
+            id = Comment.Id(2)
+        )
+        Mockito.`when`(postService.findPost(post.id!!)).thenReturn(post)
+        Mockito.`when`(commentService.addComment(post.id!!, anonymousDTO)).thenReturn(anonyComment)
+        mockMvc.perform(
+            MockMvcRequestBuilders.post(uri(post.id!!, "comments"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(gson.toJson(anonymousDTO))
+        )
+            .andExpect { status().isOk }
+            .andExpect { jsonPath("$.author.id").value(post.author.id) }
+    }
+
+    @Test
+    fun testGetComments() {
+        Mockito.`when`(commentService.findComments(post.id!!)).thenReturn(listOf(comment))
+
+        mockMvc.perform(MockMvcRequestBuilders.get(uri(post.id!!, "comments")).contentType(MediaType.APPLICATION_JSON))
+            .andExpect { status().isOk }
+            .andExpect { jsonPath("$.comments").value(listOf(comment)) }
+    }
 }
 
 

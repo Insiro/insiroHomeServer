@@ -1,6 +1,7 @@
 package me.insiro.home.server.post.controller
 
 import me.insiro.home.server.post.dto.comment.CommentDTO
+import me.insiro.home.server.post.dto.comment.ModifyCommentDTO
 import me.insiro.home.server.post.dto.post.NewPostDTO
 import me.insiro.home.server.post.dto.post.PostResponseDTO
 import me.insiro.home.server.post.dto.post.UpdatePostDTO
@@ -24,6 +25,10 @@ class PostController(
     private val categoryService: CategoryService,
     val commentService: CommentService,
 ) {
+    fun getSignedUser(): AuthDetail {
+        return SecurityContextHolder.getContext().authentication.principal as AuthDetail
+    }
+
     @GetMapping
     fun getPosts(): ResponseEntity<List<PostResponseDTO>> {
         val posts = postService.findPosts().map { PostResponseDTO(it) }
@@ -44,9 +49,6 @@ class PostController(
         return ResponseEntity(PostResponseDTO(post), HttpStatus.CREATED)
     }
 
-    fun getSignedUser(): AuthDetail {
-        return SecurityContextHolder.getContext().authentication.principal as AuthDetail
-    }
 
     @GetMapping("{id}")
     fun getPost(
@@ -81,5 +83,33 @@ class PostController(
         val result = postService.deletePost(id, getSignedUser().user)
         commentService.deleteComment(id)
         return ResponseEntity(result, HttpStatus.OK)
+    }
+
+    @GetMapping("{id}/comments")
+    fun getComments(@PathVariable id: Post.Id): ResponseEntity<List<CommentDTO>> {
+        val comments = commentService.findComments(id).map { CommentDTO(it) }
+        return ResponseEntity(comments, HttpStatus.OK)
+    }
+
+    @Secured("ROLE_USER")
+    @PostMapping("{id}/comments/signed")
+    fun addComment(
+        @PathVariable id: Post.Id,
+        @RequestBody newCommentDTO: ModifyCommentDTO.Signed
+    ): ResponseEntity<CommentDTO> {
+        val user = getSignedUser().user
+        postService.findPost(id) ?: throw PostNotFoundException(id)
+        val comment = commentService.addComment(id, newCommentDTO, user.id!!)
+        return ResponseEntity(CommentDTO(comment), HttpStatus.CREATED)
+    }
+
+    @PostMapping("{id}/comments")
+    fun addComment(
+        @PathVariable id: Post.Id,
+        @RequestBody newCommentDTO: ModifyCommentDTO.Anonymous
+    ): ResponseEntity<CommentDTO> {
+        postService.findPost(id) ?: throw PostNotFoundException(id)
+        val comment = commentService.addComment(id, newCommentDTO)
+        return ResponseEntity(CommentDTO(comment), HttpStatus.CREATED)
     }
 }
