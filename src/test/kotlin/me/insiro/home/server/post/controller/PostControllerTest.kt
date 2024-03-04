@@ -36,12 +36,11 @@ class PostControllerTest : AbsControllerTest("/posts") {
     private val category = Category("Default", Category.Id(0))
     private val comment = Comment("", Post.Id(1), null, CommentUserInfo.UserInfo(user), Comment.Id(1))
     private val post = JoinedPost("testPost", Status.PUBLISHED, user, category, id = Post.Id(1))
-    private lateinit var controller: PostController
     private val detail = AuthDetail(user)
 
     @BeforeEach
     override fun init() {
-        controller = PostController(postService, categoryService, commentService)
+        val controller = PostController(postService, categoryService, commentService)
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build()
     }
 
@@ -56,7 +55,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
     @Test
     fun testGetPostById() {
         Mockito.`when`(postService.findPost(post.id!!)).thenReturn(post)
-        Mockito.`when`(categoryService.get(category.id!!)).thenReturn(category)
+        Mockito.`when`(categoryService.findById(category.id!!)).thenReturn(category)
         Mockito.`when`(commentService.findComments(post.id!!)).thenReturn(listOf(comment))
         mockMvc.perform(MockMvcRequestBuilders.get(uri(post.id!!)).queryParam("comment", "true"))
             .andExpect { status().isOk }
@@ -91,7 +90,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
         val updateDTO = UpdatePostDTO(category = updated.category.name, status = updated.status)
 
         Mockito.`when`(postService.updatePost(post.id!!, updateDTO, cate2.id, user)).thenReturn(updated)
-        Mockito.`when`(categoryService.get(cate2.name)).thenReturn(cate2)
+        Mockito.`when`(categoryService.findById(cate2.name)).thenReturn(cate2)
 
         mockMvc.perform(
             MockMvcRequestBuilders.patch(uri(post.id!!))
@@ -114,7 +113,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
     @Test
     fun testCreatePost() {
         val createDTO = NewPostDTO(post.title, category.name, "New Post Content")
-        Mockito.`when`(categoryService.get(category.name)).thenReturn(category)
+        Mockito.`when`(categoryService.findById(category.name)).thenReturn(category)
         Mockito.`when`(postService.createPost(createDTO, category.id, user)).thenReturn(post)
 
         mockMvc.perform(

@@ -29,5 +29,9 @@ class PostService {
     fun findPosts(): List<JoinedPost> {
         TODO("Not Yet Implemented")
     }
+
+    fun findPostByCategory(id: Category.Id): List<JoinedPost> {
+        TODO("Not Yet Implemented")
+    }
 }
 
