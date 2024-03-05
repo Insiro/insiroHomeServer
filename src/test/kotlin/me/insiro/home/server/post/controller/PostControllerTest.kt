@@ -90,7 +90,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
         val updateDTO = UpdatePostDTO(category = updated.category.name, status = updated.status)
 
         Mockito.`when`(postService.updatePost(post.id!!, updateDTO, cate2.id, user)).thenReturn(updated)
-        Mockito.`when`(categoryService.findById(cate2.name)).thenReturn(cate2)
+        Mockito.`when`(categoryService.findByName(cate2.name)).thenReturn(cate2)
 
         mockMvc.perform(
             MockMvcRequestBuilders.patch(uri(post.id!!))
@@ -113,7 +113,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
     @Test
     fun testCreatePost() {
         val createDTO = NewPostDTO(post.title, category.name, "New Post Content")
-        Mockito.`when`(categoryService.findById(category.name)).thenReturn(category)
+        Mockito.`when`(categoryService.findByName(category.name)).thenReturn(category)
         Mockito.`when`(postService.createPost(createDTO, category.id, user)).thenReturn(post)
 
         mockMvc.perform(

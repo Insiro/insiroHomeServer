@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class CategoryService {
-    fun findById(name: String): Category? {
+    fun findByName(name: String): Category? {
         TODO("Not Yet Implemented")
     }
 
@@ -15,7 +15,7 @@ class CategoryService {
 
     }
 
-    fun delete(name: String): Category.Id {
+    fun delete(name: String): Category.Id? {
         TODO("Not Yet Implemented")
     }
 
@@ -25,7 +25,11 @@ class CategoryService {
 
     }
 
-    fun update(id: Category.Id, dto: ModifyCategoryDTO): Category {
+    fun update(name: String, dto: ModifyCategoryDTO): Category? {
+        TODO("Not Yet Implemented")
+    }
+
+    fun update(id: Category.Id, dto: ModifyCategoryDTO): Category? {
         TODO("Not Yet Implemented")
     }
 

@@ -41,7 +41,7 @@ class PostController(
         @RequestBody newPostDTO: NewPostDTO,
     ): ResponseEntity<PostResponseDTO> {
         val categoryId = newPostDTO.category?.let {
-            categoryService.findById(it) ?: throw CategoryNotFoundException(it)
+            categoryService.findByName(it) ?: throw CategoryNotFoundException(it)
         }?.id
 
 
@@ -69,7 +69,7 @@ class PostController(
     ): ResponseEntity<PostResponseDTO> {
 
         val categoryId = updateDTO.category?.let {
-            categoryService.findById(it) ?: throw CategoryNotFoundException(it)
+            categoryService.findByName(it) ?: throw CategoryNotFoundException(it)
         }?.id
         val post =
             postService.updatePost(id, updateDTO, categoryId, getSignedUser().user) ?: throw PostNotFoundException(id)
