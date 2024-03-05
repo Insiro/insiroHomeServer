@@ -33,5 +33,10 @@ class PostService {
     fun findPostByCategory(id: Category.Id): List<JoinedPost> {
         TODO("Not Yet Implemented")
     }
+
+    fun changeCategory(id: Category.Id, newId: Category.Id?): JoinedPost? {
+        TODO("Not Yet Implemented")
+    }
+
 }
 
