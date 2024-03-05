@@ -5,7 +5,7 @@ import me.insiro.home.server.post.entity.Category
 import org.springframework.stereotype.Service
 
 @Service
-class CategoryService {
+class CategoryService(private val categoryRepository: Any) {
     fun findByName(name: String): Category? {
         TODO("Not Yet Implemented")
     }
