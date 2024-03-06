@@ -1,20 +1,19 @@
 package me.insiro.home.server.post.service
 
-import me.insiro.home.server.application.AbsRepository
-import me.insiro.home.server.application.exception.AbsException
 import me.insiro.home.server.post.dto.category.ModifyCategoryDTO
 import me.insiro.home.server.post.entity.Categories
 import me.insiro.home.server.post.entity.Category
+import me.insiro.home.server.post.exception.CategoryConflictException
+import me.insiro.home.server.post.exception.CategoryWrongFieldException
+import me.insiro.home.server.post.repository.CategoryRepository
 import me.insiro.home.server.testUtils.AbsDataBaseTest
 import net.bytebuddy.utility.RandomString
-import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.http.HttpStatus
 
 
 class CategoryServiceTest : AbsDataBaseTest(listOf(Categories)) {
@@ -65,12 +64,10 @@ class CategoryServiceTest : AbsDataBaseTest(listOf(Categories)) {
     fun create() {
         // Fail Test (Conflict)
         val dtoToFail = ModifyCategoryDTO(category.name)
-        val created = categoryService.create(dtoToFail)
-        assertNull(created)
+        assertThrows<CategoryConflictException> { categoryService.create(dtoToFail) }
         // Test Fail (Too long name)
-        assertThrows<CategoryWriteFailedException> {
-            ModifyCategoryDTO(category.name + RandomString.make(50))
-        }
+        val dtoToFail2 = ModifyCategoryDTO(category.name + RandomString.make(50))
+        assertThrows<CategoryWrongFieldException> { categoryService.create(dtoToFail2) }
 
         // Success Test
         val dtoToSuccess = dtoToFail.copy("new${dtoToFail.name}")
@@ -81,20 +78,29 @@ class CategoryServiceTest : AbsDataBaseTest(listOf(Categories)) {
 
     @Test
     fun update() {
-        // Not Found
         val updateDTO = ModifyCategoryDTO(category.name + "1")
-        var updated = categoryService.update(Category.Id(category.id!!.value + 1), updateDTO)
+        val updated = categoryService.update(Category.Id(category.id!!.value), updateDTO)
+        assertNotNull(updated)
+        assertEquals(updateDTO.name, updated!!.name)
+    }
+
+    @Test
+    fun `test update Failure`() {
+        // Not Found
+        val notFoundDTO = ModifyCategoryDTO(category.name + "1")
+        val updated = categoryService.update(Category.Id(category.id!!.value + 1), notFoundDTO)
         assertNull(updated)
         // Test Fail (Too long name)
-        assertThrows<CategoryWriteFailedException> {
-            ModifyCategoryDTO(category.name + RandomString.make(50))
+        val tooLongDTO = ModifyCategoryDTO(category.name + RandomString.make(50))
+        assertThrows<CategoryWrongFieldException> {
+            categoryService.update(category.id!!, tooLongDTO)
         }
-        // Update Success
-        updated = categoryService.update(Category.Id(category.id!!.value), updateDTO)
-        assertNotNull(updated)
-        assertEquals(category.name, updated!!.name)
+        insert(category.copy(name = category.name + "2"))
+        val conflictDTO = ModifyCategoryDTO(category.name + "2")
+        assertThrows<CategoryConflictException> { categoryService.update(category.id!!, conflictDTO) }
 
     }
+
 
     @Test
     fun findAll() {
@@ -103,25 +109,3 @@ class CategoryServiceTest : AbsDataBaseTest(listOf(Categories)) {
     }
 }
 
-class CategoryRepository : AbsRepository<Int, Categories, Category, Category.Id> {
-    override val table: Categories
-        get() = TODO("Not yet implemented")
-
-    override fun relationObjectMapping(it: ResultRow): Category {
-        TODO("Not yet implemented")
-    }
-
-    override fun update(vo: Category): Category {
-        TODO("Not yet implemented")
-    }
-
-    override fun new(vo: Category): Category {
-        TODO("Not yet implemented")
-    }
-
-}
-
-class CategoryWriteFailedException(category: Category) : AbsException(
-    HttpStatus.UNPROCESSABLE_ENTITY,
-    "failed write Category\n$category"
-)
