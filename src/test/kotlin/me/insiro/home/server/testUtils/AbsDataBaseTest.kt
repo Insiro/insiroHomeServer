@@ -8,13 +8,11 @@ import org.mockito.junit.jupiter.MockitoExtension
 
 
 @ExtendWith(MockitoExtension::class)
-abstract class AbsDataBaseTest(private val tables: List<Table>) {
+abstract class AbsDataBaseTest(private vararg val tables: Table) {
+
     protected val source = TestDataSource
     protected fun resetDataBase() = transaction {
-        for (table in tables) {
-            print(table.tableName)
-            SchemaUtils.drop(table)
-            SchemaUtils.create(table)
-        }
+            SchemaUtils.drop(*tables)
+            SchemaUtils.create(*tables)
     }
 }

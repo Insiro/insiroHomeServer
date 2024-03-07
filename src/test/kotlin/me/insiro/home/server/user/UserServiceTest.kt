@@ -1,13 +1,13 @@
 package me.insiro.home.server.user
 
 import me.insiro.home.server.testUtils.AbsDataBaseTest
+import me.insiro.home.server.testUtils.DBInserter
 import me.insiro.home.server.user.dto.NewUserDTO
 import me.insiro.home.server.user.dto.UpdateUserDTO
 import me.insiro.home.server.user.dto.UserRole
 import me.insiro.home.server.user.entity.User
 import me.insiro.home.server.user.entity.Users
 import me.insiro.home.server.user.exception.UserConflictExcept
-import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Assertions.*
@@ -22,7 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import java.time.LocalDateTime
 
 @ExtendWith(MockitoExtension::class)
-class UserServiceTest : AbsDataBaseTest(arrayListOf(Users)) {
+class UserServiceTest : AbsDataBaseTest(Users) {
     private val userRepository = UserRepository()
     private val passwordEncoder: PasswordEncoder = BCryptPasswordEncoder()
     private val userService = UserService(userRepository, passwordEncoder)
@@ -32,18 +32,7 @@ class UserServiceTest : AbsDataBaseTest(arrayListOf(Users)) {
     @BeforeEach
     fun init() {
         resetDataBase()
-        user = User("testName", passwordEncoder.encode(userPwd), "test@example.com", 0b1)
-        user = user.copy(id = User.Id( insertUser(user)))
-    }
-
-    private fun insertUser(user: User): Long = transaction {
-        Users.insertAndGetId {
-            it[name] = user.name
-            it[password] = user.hashedPassword
-            it[email] = user.email
-            it[permission] = user.permission
-            it[Users.createdAt] = user.createdAt
-        }.value
+        user = DBInserter.insertUser(User("testName", passwordEncoder.encode(userPwd), "test@example.com", 0b1))
     }
 
     @Test

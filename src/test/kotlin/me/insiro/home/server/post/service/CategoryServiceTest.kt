@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 
-class CategoryServiceTest : AbsDataBaseTest(listOf(Categories)) {
+class CategoryServiceTest : AbsDataBaseTest(Categories) {
     private val categoryRepository = CategoryRepository()
     private val categoryService = CategoryService(categoryRepository)
     private lateinit var category: Category
