@@ -2,13 +2,13 @@ package me.insiro.home.server.post.entity
 
 import kotlinx.serialization.Serializable
 import me.insiro.home.server.application.domain.BaseEntityVO
+import me.insiro.home.server.application.domain.BaseIDTable
 import me.insiro.home.server.application.domain.Status
 import me.insiro.home.server.user.entity.User
 import me.insiro.home.server.user.entity.Users
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IntIdTable
 
-object Posts : IntIdTable() {
+object Posts : BaseIDTable() {
     val title = varchar("title", 100)
     val status = enumeration<Status>("status")
     val authorId = reference("authorId", Users.id)
@@ -19,7 +19,7 @@ data class Post(
     var title: String,
     var status: Status,
     var authorId: User.Id,
-    var category: Category.Id,
+    var categoryId: Category.Id,
     override val id: Id? = null,
 ) : BaseEntityVO() {
     @JvmInline

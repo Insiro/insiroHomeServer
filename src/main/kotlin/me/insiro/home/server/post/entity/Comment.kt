@@ -12,8 +12,8 @@ import org.jetbrains.exposed.sql.json.json
 object Comments : BaseIDTable() {
     val content = varchar("content", 300)
     val postId = reference("postId", Posts.id)
-    val parentId = reference("parentId", Comments.id)
-    val authorId = json<CommentUserInfo>("author_json", Json { prettyPrint = true })
+    val parentId = reference("parentId", Comments.id).nullable()
+    val authorInfo = json<CommentUserInfo>("author_json", Json { prettyPrint = true })
 }
 
 data class Comment(
