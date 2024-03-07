@@ -1,6 +1,6 @@
 package me.insiro.home.server.application
 
-import me.insiro.home.server.application.domain.EntityVO
+import me.insiro.home.server.application.domain.IEntityVO
 import me.insiro.home.server.testUtils.AbsDataBaseTest
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
@@ -33,9 +33,9 @@ class AbsRepositoryTest : AbsDataBaseTest(TestEntities) {
         var value: Int,
         override val id: Id? = null,
         override val createdAt: LocalDateTime?=null,
-    ) : EntityVO<Int>() {
+    ) : IEntityVO<Int> {
         @JvmInline
-        value class Id(override val value: Int) : EntityVO.Id<Int> {
+        value class Id(override val value: Int) : IEntityVO.Id<Int> {
             constructor(id: EntityID<Int>) : this(id.value)
         }
     }
