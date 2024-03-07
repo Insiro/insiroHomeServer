@@ -1,5 +1,6 @@
 package me.insiro.home.server.user
 
+import me.insiro.home.server.application.domain.OffsetLimit
 import me.insiro.home.server.user.dto.AuthDetail
 import me.insiro.home.server.user.dto.NewUserDTO
 import me.insiro.home.server.user.dto.UpdateUserDTO
@@ -54,7 +55,7 @@ class UserService(
         )
     }
 
-    fun getUsers(offset: Int = 0, limit: Long? = null): List<User> {
-        return userRepository.find(offset, limit)
+    fun getUsers(offsetLimit: OffsetLimit?): List<User> {
+        return userRepository.find(offsetLimit)
     }
 }

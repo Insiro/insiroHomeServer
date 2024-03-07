@@ -1,6 +1,7 @@
 package me.insiro.home.server.post.controller
 
 import me.insiro.home.server.application.IController
+import me.insiro.home.server.application.domain.OffsetLimit
 import me.insiro.home.server.post.dto.category.CategoryDTO
 import me.insiro.home.server.post.dto.comment.CommentDTO
 import me.insiro.home.server.post.dto.comment.ModifyCommentDTO
@@ -54,10 +55,13 @@ class PostController(
     @GetMapping("{id}")
     fun getPost(
         @PathVariable id: Post.Id,
-        @RequestParam(required = false) comment: Boolean = false
+        @RequestParam(required = false) comment: Boolean = false,
+        @RequestParam(required = false) offset: Long = 0,
+        @RequestParam(required = false) limit: Int? = null
     ): ResponseEntity<PostResponseDTO> {
+        val offsetLimit = limit?.let { OffsetLimit(offset, limit) }
         val post = postService.findJoinedPost(id) ?: throw PostNotFoundException(id)
-        val comments = commentService.findComments(id).map { CommentDTO(it) }
+        val comments = commentService.findComments(id, offsetLimit).map { CommentDTO(it) }
 
         return ResponseEntity(PostResponseDTO(post, comments), HttpStatus.OK)
     }
@@ -89,8 +93,13 @@ class PostController(
     }
 
     @GetMapping("{id}/comments")
-    fun getComments(@PathVariable id: Post.Id): ResponseEntity<List<CommentDTO>> {
-        val comments = commentService.findComments(id).map { CommentDTO(it) }
+    fun getComments(
+        @PathVariable id: Post.Id,
+        @RequestParam(required = false) offset: Long = 0,
+        @RequestParam(required = false) limit: Int? = null
+    ): ResponseEntity<List<CommentDTO>> {
+        val offsetLimit = limit?.let { OffsetLimit(offset, limit) }
+        val comments = commentService.findComments(id, offsetLimit).map { CommentDTO(it) }
         return ResponseEntity(comments, HttpStatus.OK)
     }
 

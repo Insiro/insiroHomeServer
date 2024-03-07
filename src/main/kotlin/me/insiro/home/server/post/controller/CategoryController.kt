@@ -1,5 +1,6 @@
 package me.insiro.home.server.post.controller
 
+import me.insiro.home.server.application.domain.OffsetLimit
 import me.insiro.home.server.post.dto.category.CategoryDTO
 import me.insiro.home.server.post.dto.category.ModifyCategoryDTO
 import me.insiro.home.server.post.exception.category.CategoryConflictException
@@ -17,8 +18,12 @@ class CategoryController(
     private val postService: PostService,
 ) {
     @GetMapping
-    fun getAllCategories(): ResponseEntity<List<CategoryDTO>> {
-        val categories = categoryService.findAll().map(::CategoryDTO)
+    fun getAllCategories(
+        @RequestParam(required = false) offset: Long = 0,
+        @RequestParam(required = false) limit: Int? = null
+    ): ResponseEntity<List<CategoryDTO>> {
+        val offsetLimit = limit?.let { OffsetLimit(offset, limit) }
+        val categories = categoryService.findAll(offsetLimit).map(::CategoryDTO)
         return ResponseEntity(categories, HttpStatus.OK)
     }
 

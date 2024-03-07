@@ -1,6 +1,7 @@
 package me.insiro.home.server.application
 
 import me.insiro.home.server.application.domain.IEntityVO
+import me.insiro.home.server.application.domain.OffsetLimit
 import me.insiro.home.server.testUtils.AbsDataBaseTest
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
@@ -32,7 +33,7 @@ class AbsRepositoryTest : AbsDataBaseTest(TestEntities) {
     data class TestVO(
         var value: Int,
         override val id: Id? = null,
-        override val createdAt: LocalDateTime?=null,
+        override val createdAt: LocalDateTime? = null,
     ) : IEntityVO<Int> {
         @JvmInline
         value class Id(override val value: Int) : IEntityVO.Id<Int> {
@@ -84,7 +85,7 @@ class AbsRepositoryTest : AbsDataBaseTest(TestEntities) {
         assertEquals(1, voList.size)
         assertEquals(testEntity.id.value, voList[0].id!!.value)
         assertEquals(testEntity.value, voList[0].value)
-        val voList2 = testRepository.find(offset = 2)
+        val voList2 = testRepository.find(limitOption = OffsetLimit(2, 10))
         assertEquals(0, voList2.size)
     }
 
@@ -105,7 +106,7 @@ class AbsRepositoryTest : AbsDataBaseTest(TestEntities) {
 
     @Test
     fun deleteByExpression() {
-        testRepository.delete(TestVO.Id( testEntity.id))
+        testRepository.delete(TestVO.Id(testEntity.id))
         val entity = transaction { TestEntity.findById(testEntity.id) }
         assertNull(entity)
     }

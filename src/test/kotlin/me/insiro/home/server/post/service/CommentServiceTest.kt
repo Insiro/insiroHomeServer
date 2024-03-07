@@ -1,6 +1,7 @@
 package me.insiro.home.server.post.service
 
 import me.insiro.home.server.application.domain.Status
+import me.insiro.home.server.post.dto.comment.ModifierDTO
 import me.insiro.home.server.post.dto.comment.ModifyCommentDTO
 import me.insiro.home.server.post.entity.*
 import me.insiro.home.server.post.repository.CommentRepository
@@ -37,14 +38,15 @@ class CommentServiceTest : AbsDataBaseTest(Users, Categories,Posts, Comments) {
 
     @Test
     fun `find comment by Post Id`() {
-        val comments = commentService.findComments(post.id!!)
+        val comments = commentService.findComments(post.id!!, null)
         assertTrue(comments.isNotEmpty())
         assertEquals(listOf(comment), comments)
     }
 
     @Test
     fun deleteComment() {
-        assertTrue(commentService.deleteComment(comment.id!!))
+        val modifier = ModifierDTO.Signed()
+        assertTrue(commentService.deleteComment(comment.id!!, modifier, user))
         val nComment = transaction {
             Comments.selectAll().where { Comments.id eq comment.id!!.value }.count()
         }
@@ -102,8 +104,6 @@ class CommentServiceTest : AbsDataBaseTest(Users, Categories,Posts, Comments) {
 
     @Test
     fun `add comment with anonymous user`() {
-        val pwd = "testPwd"
-        val anonymousUser = CommentUserInfo.Anonymous("testUser", passwordEncoder.encode(pwd))
         val addDTO = ModifyCommentDTO.Anonymous("commentUpdated", "testUser", "testPwd")
         val added = commentService.addComment(post.id!!, addDTO)
         assertTrue(added.author is CommentUserInfo.Anonymous)

@@ -102,7 +102,7 @@ class UserServiceTest : AbsDataBaseTest(Users) {
     @Test
     @Description("Test of Get Users")
     fun getUsers() {
-        val users = userService.getUsers()
+        val users = userService.getUsers(null)
         assertEquals(1, users.size)
     }
 

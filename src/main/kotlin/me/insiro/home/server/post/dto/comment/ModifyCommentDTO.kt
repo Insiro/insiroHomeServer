@@ -1,13 +1,14 @@
 package me.insiro.home.server.post.dto.comment
 
-sealed interface ModifyCommentDTO {
+
+sealed interface ModifyCommentDTO : ModifierDTO {
     val content: String
 
-    data class Signed(override val content: String) : ModifyCommentDTO
+    data class Signed(override val content: String) : ModifyCommentDTO, ModifierDTO.ISigned
 
     data class Anonymous(
         override val content: String,
-        val name: String,
-        val password: String,
-    ) : ModifyCommentDTO
+        override val name: String,
+        override val password: String,
+    ) : ModifyCommentDTO, ModifierDTO.IAnonymous
 }

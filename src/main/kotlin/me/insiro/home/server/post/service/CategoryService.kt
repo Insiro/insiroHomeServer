@@ -1,5 +1,6 @@
 package me.insiro.home.server.post.service
 
+import me.insiro.home.server.application.domain.OffsetLimit
 import me.insiro.home.server.post.dto.category.ModifyCategoryDTO
 import me.insiro.home.server.post.entity.Category
 import me.insiro.home.server.post.repository.CategoryRepository
@@ -39,8 +40,8 @@ class CategoryService(private val categoryRepository: CategoryRepository) {
         return categoryRepository.update(newCate)
     }
 
-    fun findAll(limit: Int = 0, offset: Long? = null): List<Category> {
-        return categoryRepository.find(limit, offset)
+    fun findAll(offsetLimit: OffsetLimit?): List<Category> {
+        return categoryRepository.find(offsetLimit)
     }
 
 }

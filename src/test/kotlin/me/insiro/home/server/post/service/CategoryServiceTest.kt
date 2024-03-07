@@ -104,7 +104,7 @@ class CategoryServiceTest : AbsDataBaseTest(Categories) {
 
     @Test
     fun findAll() {
-        val categories = categoryService.findAll()
+        val categories = categoryService.findAll(null)
         assertEquals(listOf(category), categories)
     }
 }

@@ -67,7 +67,7 @@ class CategoryControllerTest : AbsControllerTest("/category") {
 
     @Test
     fun `get Categories Info`() {
-        Mockito.`when`(categoryService.findAll()).thenReturn(listOf(category))
+        Mockito.`when`(categoryService.findAll(null)).thenReturn(listOf(category))
         mockMvc.perform(MockMvcRequestBuilders.get(uri))
             .andExpect { status().isOk }
             .andExpect { jsonPath("$").isArray }

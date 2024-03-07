@@ -66,7 +66,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
     fun testGetPostById() {
         Mockito.`when`(postService.findJoinedPost(post.id!!)).thenReturn(joinedPost)
         Mockito.`when`(categoryService.findById(category.id!!)).thenReturn(category)
-        Mockito.`when`(commentService.findComments(post.id!!)).thenReturn(listOf(comment))
+        Mockito.`when`(commentService.findComments(post.id!!,null)).thenReturn(listOf(comment))
         mockMvc.perform(MockMvcRequestBuilders.get(uri(post.id!!)).queryParam("comment", "true"))
             .andExpect { status().isOk }
             .andExpect { jsonPath("$.status").value(post.status) }
@@ -190,7 +190,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
 
     @Test
     fun testGetComments() {
-        Mockito.`when`(commentService.findComments(post.id!!)).thenReturn(listOf(comment))
+        Mockito.`when`(commentService.findComments(post.id!!,null)).thenReturn(listOf(comment))
 
         mockMvc.perform(MockMvcRequestBuilders.get(uri(post.id!!, "comments")).contentType(MediaType.APPLICATION_JSON))
             .andExpect { status().isOk }

@@ -1,5 +1,6 @@
 package me.insiro.home.server.post.service
 
+import me.insiro.home.server.application.domain.OffsetLimit
 import me.insiro.home.server.post.dto.post.NewPostDTO
 import me.insiro.home.server.post.dto.post.UpdatePostDTO
 import me.insiro.home.server.post.entity.Category
@@ -52,8 +53,8 @@ class PostService(private val postRepository: PostRepository) {
         return postRepository.findById(id)
     }
 
-    fun findPosts(limit: Int = 0, offset: Long? = null): List<Post.Raw> {
-        return postRepository.find(limit, offset)
+    fun findPosts(offsetLimit: OffsetLimit?): List<Post.Raw> {
+        return postRepository.find(offsetLimit)
     }
 
     fun findJoinedPosts(limit: Int = 0, offset: Long? = null): List<Post.Joined> {

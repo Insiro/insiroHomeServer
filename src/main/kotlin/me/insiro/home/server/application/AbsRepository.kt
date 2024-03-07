@@ -1,5 +1,6 @@
 package me.insiro.home.server.application
 
+import me.insiro.home.server.application.domain.OffsetLimit
 import me.insiro.home.server.application.domain.IEntityVO
 import org.jetbrains.exposed.dao.DaoEntityID
 import org.jetbrains.exposed.dao.id.IdTable
@@ -19,9 +20,9 @@ interface AbsRepository<Id : Comparable<Id>, Table, VO, VoId> where   VO : IEnti
         ret
     }
 
-    fun find(limit: Int = 0, offset: Long? = null): List<VO> = transaction {
+    fun find(limitOption: OffsetLimit?=null): List<VO> = transaction {
         table.selectAll()
-            .let { query -> offset?.let { query.limit(limit, offset) } ?: query }
+            .let { query -> limitOption?.let { query.limit(it.limit, it.offset) } ?: query }
             .map { relationObjectMapping(it) }
     }
 
