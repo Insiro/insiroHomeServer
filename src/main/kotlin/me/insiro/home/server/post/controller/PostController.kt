@@ -6,8 +6,8 @@ import me.insiro.home.server.post.dto.post.NewPostDTO
 import me.insiro.home.server.post.dto.post.PostResponseDTO
 import me.insiro.home.server.post.dto.post.UpdatePostDTO
 import me.insiro.home.server.post.entity.Post
-import me.insiro.home.server.post.exception.CategoryNotFoundException
-import me.insiro.home.server.post.exception.PostNotFoundException
+import me.insiro.home.server.post.exception.category.CategoryNotFoundException
+import me.insiro.home.server.post.exception.post.PostNotFoundException
 import me.insiro.home.server.post.service.CategoryService
 import me.insiro.home.server.post.service.CommentService
 import me.insiro.home.server.post.service.PostService

@@ -1,4 +1,4 @@
-package me.insiro.home.server.post.exception
+package me.insiro.home.server.post.exception.comment
 
 import me.insiro.home.server.application.exception.AbsException
 import me.insiro.home.server.post.entity.Comment

@@ -2,8 +2,8 @@ package me.insiro.home.server.post.controller
 
 import me.insiro.home.server.post.dto.category.CategoryDTO
 import me.insiro.home.server.post.dto.category.ModifyCategoryDTO
-import me.insiro.home.server.post.exception.CategoryConflictException
-import me.insiro.home.server.post.exception.CategoryNotFoundException
+import me.insiro.home.server.post.exception.category.CategoryConflictException
+import me.insiro.home.server.post.exception.category.CategoryNotFoundException
 import me.insiro.home.server.post.service.CategoryService
 import me.insiro.home.server.post.service.PostService
 import org.springframework.http.HttpStatus

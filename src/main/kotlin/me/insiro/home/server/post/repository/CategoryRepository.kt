@@ -3,8 +3,8 @@ package me.insiro.home.server.post.repository
 import me.insiro.home.server.application.AbsRepository
 import me.insiro.home.server.post.entity.Categories
 import me.insiro.home.server.post.entity.Category
-import me.insiro.home.server.post.exception.CategoryConflictException
-import me.insiro.home.server.post.exception.CategoryWrongFieldException
+import me.insiro.home.server.post.exception.category.CategoryConflictException
+import me.insiro.home.server.post.exception.category.CategoryWrongFieldException
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insertAndGetId

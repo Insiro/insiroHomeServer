@@ -3,8 +3,8 @@ package me.insiro.home.server.post.service
 import me.insiro.home.server.post.dto.category.ModifyCategoryDTO
 import me.insiro.home.server.post.entity.Categories
 import me.insiro.home.server.post.entity.Category
-import me.insiro.home.server.post.exception.CategoryConflictException
-import me.insiro.home.server.post.exception.CategoryWrongFieldException
+import me.insiro.home.server.post.exception.category.CategoryConflictException
+import me.insiro.home.server.post.exception.category.CategoryWrongFieldException
 import me.insiro.home.server.post.repository.CategoryRepository
 import me.insiro.home.server.testUtils.AbsDataBaseTest
 import net.bytebuddy.utility.RandomString
