@@ -5,7 +5,6 @@ import me.insiro.home.server.user.dto.NewUserDTO
 import me.insiro.home.server.user.dto.UpdateUserDTO
 import me.insiro.home.server.user.dto.UserRole
 import me.insiro.home.server.user.entity.User
-import me.insiro.home.server.user.entity.Users
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -21,11 +20,7 @@ class UserService(
     }
 
     fun getUser(userName: String): User? {
-        val users = userRepository.find { Users.name eq userName }
-        if (users.isEmpty())
-            return null
-        return users[0]
-
+        return userRepository.find(userName)
     }
 
     override fun loadUserByUsername(username: String): AuthDetail? {
@@ -34,6 +29,7 @@ class UserService(
     }
 
     fun updateUser(id: User.Id, updateUserDTO: UpdateUserDTO): User? {
+
         return userRepository.update(id) {
             updateUserDTO.name?.let { value -> it[name] = value }
             updateUserDTO.email?.let { value -> it[email] = value }

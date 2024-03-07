@@ -25,7 +25,7 @@ interface AbsRepository<Id : Comparable<Id>, Table, VO, VoId> where   VO : Entit
             .map { relationObjectMapping(it) }
     }
 
-    fun find(op: SqlExpressionBuilder.() -> Op<Boolean>): List<VO> = transaction {
+    private fun find(op: SqlExpressionBuilder.() -> Op<Boolean>): List<VO> = transaction {
         table.selectAll().where(op).map { relationObjectMapping(it) }
     }
 
@@ -33,7 +33,7 @@ interface AbsRepository<Id : Comparable<Id>, Table, VO, VoId> where   VO : Entit
 
     fun update(vo: VO): VO
 
-    fun update(where: (SqlExpressionBuilder.() -> Op<Boolean>)? = null, body: Table.(UpdateStatement) -> Unit): Int =
+    private fun update(where: (SqlExpressionBuilder.() -> Op<Boolean>)? = null, body: Table.(UpdateStatement) -> Unit): Int =
         transaction {
             table.update(where, body = body)
         }
@@ -57,7 +57,7 @@ interface AbsRepository<Id : Comparable<Id>, Table, VO, VoId> where   VO : Entit
         return vo.id?.let { delete(it.value) } ?: false
     }
 
-    fun delete(op: Table.(ISqlExpressionBuilder) -> Op<Boolean>): Int = transaction {
+    private fun delete(op: Table.(ISqlExpressionBuilder) -> Op<Boolean>): Int = transaction {
         table.deleteWhere(op = op)
     }
 }

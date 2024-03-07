@@ -8,6 +8,7 @@ import me.insiro.home.server.user.exception.UserNotFoundException
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insertAndGetId
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import org.springframework.stereotype.Repository
@@ -52,6 +53,10 @@ class UserRepository : AbsRepository<Long, Users, User, User.Id> {
             it[email] = vo.email
         }
         findById(id)!!
+    }
+    fun find(userName:String):User? = transaction {
+        val selected = Users.selectAll().where{ Users.name eq userName}.firstOrNull()
+        selected?.let { relationObjectMapping(it) }
     }
 }
 

@@ -2,13 +2,11 @@ package me.insiro.home.server.application
 
 import me.insiro.home.server.application.domain.EntityVO
 import me.insiro.home.server.testUtils.AbsDataBaseTest
-import org.jetbrains.exposed.dao.DaoEntityID
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -18,7 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension
 
 @ExtendWith(MockitoExtension::class)
 
-class AbsRepositoryTest : AbsDataBaseTest(listOf(TestEntities)) {
+class AbsRepositoryTest : AbsDataBaseTest(TestEntities) {
     object TestEntities : IntIdTable() {
         val value = integer("value")
     }
@@ -89,18 +87,6 @@ class AbsRepositoryTest : AbsDataBaseTest(listOf(TestEntities)) {
     }
 
     @Test
-    fun update() {
-        val updated = testRepository.update {
-            this.id eq testEntity.id
-            it[id] = DaoEntityID(testEntity.id.value + 1, TestEntities)
-        }
-        val updatedEntity = transaction { TestEntity.findById(testEntity.id.value + 1) }
-
-        assertEquals(1, updated)
-        assertNotNull(updatedEntity)
-    }
-
-    @Test
     fun deleteById() {
         testRepository.delete(TestVO.Id(testEntity.id))
         val entity = transaction { TestEntity.findById(testEntity.id) }
@@ -117,7 +103,7 @@ class AbsRepositoryTest : AbsDataBaseTest(listOf(TestEntities)) {
 
     @Test
     fun deleteByExpression() {
-        testRepository.delete { this.id eq testEntity.id }
+        testRepository.delete(TestVO.Id( testEntity.id))
         val entity = transaction { TestEntity.findById(testEntity.id) }
         assertNull(entity)
     }

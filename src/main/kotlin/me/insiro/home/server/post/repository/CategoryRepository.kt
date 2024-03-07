@@ -24,6 +24,7 @@ class CategoryRepository : AbsRepository<Int, Categories, Category, Category.Id>
     }
 
     override fun update(vo: Category): Category = transaction {
+        assert( vo.id !=null)
         findByName(vo.name)?.let { throw CategoryConflictException(vo.name) }
         try {
             Categories.update {
