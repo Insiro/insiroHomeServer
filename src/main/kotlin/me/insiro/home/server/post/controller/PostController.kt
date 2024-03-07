@@ -81,7 +81,6 @@ class PostController(
         @PathVariable id: Post.Id,
     ): ResponseEntity<Boolean> {
         val result = postService.deletePost(id, getSignedUser().user)
-        commentService.deleteComment(id)
         return ResponseEntity(result, HttpStatus.OK)
     }
 
@@ -99,7 +98,7 @@ class PostController(
     ): ResponseEntity<CommentDTO> {
         val user = getSignedUser().user
         postService.findPost(id) ?: throw PostNotFoundException(id)
-        val comment = commentService.addComment(id, newCommentDTO, user.id!!)
+        val comment = commentService.addComment(id, newCommentDTO, user)
         return ResponseEntity(CommentDTO(comment), HttpStatus.CREATED)
     }
 
