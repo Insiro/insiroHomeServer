@@ -1,5 +1,7 @@
 package me.insiro.home.server.post.controller
 
+import me.insiro.home.server.application.IController
+import me.insiro.home.server.post.dto.category.CategoryDTO
 import me.insiro.home.server.post.dto.comment.CommentDTO
 import me.insiro.home.server.post.dto.comment.ModifyCommentDTO
 import me.insiro.home.server.post.dto.post.NewPostDTO
@@ -11,11 +13,10 @@ import me.insiro.home.server.post.exception.post.PostNotFoundException
 import me.insiro.home.server.post.service.CategoryService
 import me.insiro.home.server.post.service.CommentService
 import me.insiro.home.server.post.service.PostService
-import me.insiro.home.server.user.dto.AuthDetail
+import me.insiro.home.server.user.dto.SimpleUserDTO
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.annotation.Secured
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -24,14 +25,11 @@ class PostController(
     private val postService: PostService,
     private val categoryService: CategoryService,
     val commentService: CommentService,
-) {
-    fun getSignedUser(): AuthDetail {
-        return SecurityContextHolder.getContext().authentication.principal as AuthDetail
-    }
+) : IController {
 
     @GetMapping
     fun getPosts(): ResponseEntity<List<PostResponseDTO>> {
-        val posts = postService.findPosts().map { PostResponseDTO(it) }
+        val posts = postService.findJoinedPosts().map { PostResponseDTO(it) }
         return ResponseEntity(posts, HttpStatus.OK)
     }
 
@@ -40,13 +38,16 @@ class PostController(
     fun createPost(
         @RequestBody newPostDTO: NewPostDTO,
     ): ResponseEntity<PostResponseDTO> {
-        val categoryId = newPostDTO.category?.let {
+        val category = newPostDTO.category?.let {
             categoryService.findByName(it) ?: throw CategoryNotFoundException(it)
-        }?.id
+        }
 
-
-        val post = postService.createPost(newPostDTO, categoryId, getSignedUser().user)
-        return ResponseEntity(PostResponseDTO(post), HttpStatus.CREATED)
+        val user = getSignedUser()!!
+        val post = postService.createPost(newPostDTO, user, category?.id)
+        return ResponseEntity(
+            PostResponseDTO(post, SimpleUserDTO(user), category?.let { CategoryDTO(it) }),
+            HttpStatus.CREATED
+        )
     }
 
 
@@ -55,7 +56,7 @@ class PostController(
         @PathVariable id: Post.Id,
         @RequestParam(required = false) comment: Boolean = false
     ): ResponseEntity<PostResponseDTO> {
-        val post = postService.findPost(id) ?: throw PostNotFoundException(id)
+        val post = postService.findJoinedPost(id) ?: throw PostNotFoundException(id)
         val comments = commentService.findComments(id).map { CommentDTO(it) }
 
         return ResponseEntity(PostResponseDTO(post, comments), HttpStatus.OK)
@@ -68,19 +69,22 @@ class PostController(
         @RequestBody updateDTO: UpdatePostDTO,
     ): ResponseEntity<PostResponseDTO> {
 
-        val categoryId = updateDTO.category?.let {
-            categoryService.findByName(it) ?: throw CategoryNotFoundException(it)
-        }?.id
+        val category =
+            updateDTO.category?.let { categoryService.findByName(it) ?: throw CategoryNotFoundException(it) }
+        val user = getSignedUser()!!
         val post =
-            postService.updatePost(id, updateDTO, categoryId, getSignedUser().user) ?: throw PostNotFoundException(id)
-        return ResponseEntity(PostResponseDTO(post), HttpStatus.OK)
+            postService.updatePost(id, updateDTO, category?.id, user) ?: throw PostNotFoundException(id)
+        return ResponseEntity(
+            PostResponseDTO(post, SimpleUserDTO(user), category?.let { CategoryDTO(it) }),
+            HttpStatus.OK
+        )
     }
 
     @DeleteMapping("{id}")
     fun deletePost(
         @PathVariable id: Post.Id,
     ): ResponseEntity<Boolean> {
-        val result = postService.deletePost(id, getSignedUser().user)
+        val result = postService.deletePost(id, getSignedUser()!!)
         return ResponseEntity(result, HttpStatus.OK)
     }
 
@@ -90,13 +94,12 @@ class PostController(
         return ResponseEntity(comments, HttpStatus.OK)
     }
 
-    @Secured("ROLE_USER")
     @PostMapping("{id}/comments/signed")
     fun addComment(
         @PathVariable id: Post.Id,
         @RequestBody newCommentDTO: ModifyCommentDTO.Signed
     ): ResponseEntity<CommentDTO> {
-        val user = getSignedUser().user
+        val user = getSignedUser()
         postService.findPost(id) ?: throw PostNotFoundException(id)
         val comment = commentService.addComment(id, newCommentDTO, user)
         return ResponseEntity(CommentDTO(comment), HttpStatus.CREATED)

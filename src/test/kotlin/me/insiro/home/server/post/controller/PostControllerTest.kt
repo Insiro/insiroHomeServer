@@ -4,7 +4,10 @@ import me.insiro.home.server.application.domain.Status
 import me.insiro.home.server.post.dto.comment.ModifyCommentDTO
 import me.insiro.home.server.post.dto.post.NewPostDTO
 import me.insiro.home.server.post.dto.post.UpdatePostDTO
-import me.insiro.home.server.post.entity.*
+import me.insiro.home.server.post.entity.Category
+import me.insiro.home.server.post.entity.Comment
+import me.insiro.home.server.post.entity.CommentUserInfo
+import me.insiro.home.server.post.entity.Post
 import me.insiro.home.server.post.service.CategoryService
 import me.insiro.home.server.post.service.CommentService
 import me.insiro.home.server.post.service.PostService
@@ -35,8 +38,14 @@ class PostControllerTest : AbsControllerTest("/posts") {
     private val commentService = mock(CommentService::class.java)
     private val user = User("testUser", "", "testEmail", 0b1, id = User.Id(1), LocalDateTime.now())
     private val category = Category("Default", Category.Id(0), LocalDateTime.now())
-    private val comment = Comment("", Post.Id(1), null, CommentUserInfo.UserInfo(user), Comment.Id(1), LocalDateTime.now())
-    private val post = JoinedPost("testPost", Status.PUBLISHED, user, category, id = Post.Id(1), LocalDateTime.now())
+    private val comment =
+        Comment("", Post.Id(1), null, CommentUserInfo.UserInfo(user), Comment.Id(1), LocalDateTime.now())
+    private val post =
+        Post.Raw("testPost", Status.PUBLISHED, user.id!!, category.id, id = Post.Id(1), LocalDateTime.now())
+    private val joinedPost = Post.Joined(
+        "testPost", Status.PUBLISHED,
+        Post.Joined.AuthorInfo(user.id!!, user.name), category, id = Post.Id(1), LocalDateTime.now()
+    )
     private val detail = AuthDetail(user)
 
     @BeforeEach
@@ -47,7 +56,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
 
     @Test
     fun testGetPosts() {
-        Mockito.`when`(postService.findPosts()).thenReturn(listOf())
+        Mockito.`when`(postService.findJoinedPosts()).thenReturn(listOf())
         mockMvc.perform(MockMvcRequestBuilders.get(uri))
             .andExpect { status().isOk }
             .andExpect { jsonPath("$").isArray }
@@ -55,7 +64,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
 
     @Test
     fun testGetPostById() {
-        Mockito.`when`(postService.findPost(post.id!!)).thenReturn(post)
+        Mockito.`when`(postService.findJoinedPost(post.id!!)).thenReturn(joinedPost)
         Mockito.`when`(categoryService.findById(category.id!!)).thenReturn(category)
         Mockito.`when`(commentService.findComments(post.id!!)).thenReturn(listOf(comment))
         mockMvc.perform(MockMvcRequestBuilders.get(uri(post.id!!)).queryParam("comment", "true"))
@@ -63,7 +72,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
             .andExpect { jsonPath("$.status").value(post.status) }
             .andExpect { jsonPath("$.category").value(category) }
             .andExpect { jsonPath("$.title").value(post.title) }
-            .andExpect { jsonPath("$.author.id").value(post.author.id) }
+            .andExpect { jsonPath("$.author.id").value(post.authorId) }
             .andDo { println(it.response.contentAsString) }
         mockMvc.perform(MockMvcRequestBuilders.get(uri(post.id!!)))
             .andExpect { status().isOk }
@@ -86,9 +95,9 @@ class PostControllerTest : AbsControllerTest("/posts") {
 
     @Test
     fun updatePost() {
-        val cate2 = Category("cate2", Category.Id(2))
-        val updated = post.copy(category = cate2, status = Status.HIDDEN)
-        val updateDTO = UpdatePostDTO(category = updated.category.name, status = updated.status)
+        val cate2 = Category("cate2", Category.Id(2), createdAt = LocalDateTime.now())
+        val updated = post.copy(categoryId = cate2.id, status = Status.HIDDEN)
+        val updateDTO = UpdatePostDTO(category = cate2.name, status = updated.status)
 
         Mockito.`when`(postService.updatePost(post.id!!, updateDTO, cate2.id, user)).thenReturn(updated)
         Mockito.`when`(categoryService.findByName(cate2.name)).thenReturn(cate2)
@@ -107,7 +116,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
             .andExpect { jsonPath("$.status").value(updated.status) }
             .andExpect { jsonPath("$.category").value(cate2) }
             .andExpect { jsonPath("$.title").value(updated.title) }
-            .andExpect { jsonPath("$.author.id").value(updated.author.id) }
+            .andExpect { jsonPath("$.author.id").value(updated.authorId) }
             .andExpect { jsonPath("$.comments").isArray }
     }
 
@@ -115,7 +124,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
     fun testCreatePost() {
         val createDTO = NewPostDTO(post.title, category.name, "New Post Content")
         Mockito.`when`(categoryService.findByName(category.name)).thenReturn(category)
-        Mockito.`when`(postService.createPost(createDTO, category.id, user)).thenReturn(post)
+        Mockito.`when`(postService.createPost(createDTO, user, category.id)).thenReturn(post)
 
         mockMvc.perform(
             MockMvcRequestBuilders.post(uri)
@@ -129,9 +138,9 @@ class PostControllerTest : AbsControllerTest("/posts") {
         )
             .andExpect { status().isOk }
             .andExpect { jsonPath("$.status").value(post.status) }
-            .andExpect { jsonPath("$.category").value(post.category) }
+            .andExpect { jsonPath("$.category").value(category) }
             .andExpect { jsonPath("$.title").value(post.title) }
-            .andExpect { jsonPath("$.author.id").value(post.author.id) }
+            .andExpect { jsonPath("$.author.id").value(post.authorId) }
             .andExpect { jsonPath("$.comments").isArray }
     }
 
@@ -160,22 +169,23 @@ class PostControllerTest : AbsControllerTest("/posts") {
     @Test
     fun `test add comment with anonymous user`() {
         val anonymousDTO = ModifyCommentDTO.Anonymous("content", "testAnonymous", "testPwd")
-        val anonyComment = Comment(
+        val anonymousComment = Comment(
             anonymousDTO.content,
             post.id!!,
             null,
             CommentUserInfo.Anonymous(anonymousDTO.name, anonymousDTO.password),
+            createdAt = LocalDateTime.now(),
             id = Comment.Id(2)
         )
         Mockito.`when`(postService.findPost(post.id!!)).thenReturn(post)
-        Mockito.`when`(commentService.addComment(post.id!!, anonymousDTO)).thenReturn(anonyComment)
+        Mockito.`when`(commentService.addComment(post.id!!, anonymousDTO)).thenReturn(anonymousComment)
         mockMvc.perform(
             MockMvcRequestBuilders.post(uri(post.id!!, "comments"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(gson.toJson(anonymousDTO))
         )
             .andExpect { status().isOk }
-            .andExpect { jsonPath("$.author.id").value(post.author.id) }
+            .andExpect { jsonPath("$.author.id").value(post.authorId) }
     }
 
     @Test

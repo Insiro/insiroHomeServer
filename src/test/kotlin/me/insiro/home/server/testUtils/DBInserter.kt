@@ -35,12 +35,12 @@ object DBInserter {
         comment.copy(id = Comment.Id(id))
     }
 
-    fun insertPost(post: Post): Post = transaction {
+    fun insertPost(post: Post.Raw): Post.Raw = transaction {
         val id = Posts.insertAndGetId {
             it[status] = post.status
             it[title] = post.title
             it[createdAt] = LocalDateTime.now()
-            it[category] = post.categoryId.value
+            it[categoryId] = post.categoryId?.value
             it[authorId] = post.authorId.value
         }
         post.copy(id = Post.Id(id))

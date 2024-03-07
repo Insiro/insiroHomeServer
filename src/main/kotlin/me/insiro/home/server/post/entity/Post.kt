@@ -1,8 +1,8 @@
 package me.insiro.home.server.post.entity
 
 import kotlinx.serialization.Serializable
-import me.insiro.home.server.application.domain.BaseEntityVO
 import me.insiro.home.server.application.domain.BaseIDTable
+import me.insiro.home.server.application.domain.IBaseEntityVO
 import me.insiro.home.server.application.domain.Status
 import me.insiro.home.server.user.entity.User
 import me.insiro.home.server.user.entity.Users
@@ -13,29 +13,41 @@ object Posts : BaseIDTable() {
     val title = varchar("title", 100)
     val status = enumeration<Status>("status")
     val authorId = reference("authorId", Users.id)
-    val category = reference("category", Categories.id)
+    val categoryId = reference("category", Categories.id).nullable()
 }
 
-data class Post(
-    var title: String,
-    var status: Status,
-    var authorId: User.Id,
-    var categoryId: Category.Id,
-    override val id: Id? = null,
-    override val createdAt: LocalDateTime?=null,
-) : BaseEntityVO() {
+sealed interface Post : IBaseEntityVO {
+    var title: String
+    var status: Status
+    override val id:Id?
+
     @JvmInline
     @Serializable
-    value class Id(override val value: Long) : BaseEntityVO.Id {
+    value class Id(override val value: Long) : IBaseEntityVO.Id {
         constructor(entityID: EntityID<Long>) : this(entityID.value)
     }
+
+
+    data class Raw(
+        override var title: String,
+        override var status: Status,
+        var authorId: User.Id,
+        var categoryId: Category.Id?,
+        override val id: Id? = null,
+        override val createdAt: LocalDateTime? = null,
+    ) : Post
+
+    data class Joined(
+        override var title: String,
+        override var status: Status,
+        var author: AuthorInfo,
+        var category: Category? = null,
+        override val id: Id? = null,
+        override val createdAt: LocalDateTime? = null,
+    ) : Post {
+        data class AuthorInfo(val id: User.Id, val name: String)
+    }
+
+
 }
 
-data class JoinedPost(
-    var title: String,
-    var status: Status,
-    var author: User,
-    var category: Category,
-    override val id: Post.Id? = null,
-    override val createdAt: LocalDateTime?=null,
-) : BaseEntityVO()

@@ -21,7 +21,7 @@ class CommentServiceTest : AbsDataBaseTest(Users, Categories,Posts, Comments) {
     private val commentService = CommentService(commentRepository, passwordEncoder)
     private lateinit var user: User
     private lateinit var category: Category
-    private lateinit var post: Post
+    private lateinit var post: Post.Raw
     private lateinit var commentUserInfo: CommentUserInfo
     private lateinit var comment: Comment
 
@@ -31,7 +31,7 @@ class CommentServiceTest : AbsDataBaseTest(Users, Categories,Posts, Comments) {
         user = DBInserter.insertUser(User("testUser", "testPwd", "testEmail", 0b1, User.Id(1)))
         commentUserInfo = CommentUserInfo.UserInfo(user)
         category = DBInserter.insertCategory(Category("category"))
-        post = DBInserter.insertPost(Post("testPost", Status.PUBLISHED, user.id!!, category.id!!))
+        post = DBInserter.insertPost(Post.Raw("testPost", Status.PUBLISHED, user.id!!, category.id!!))
         comment = DBInserter.insertComment(Comment("testComment", post.id!!, null, commentUserInfo))
     }
 

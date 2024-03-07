@@ -3,7 +3,6 @@ package me.insiro.home.server.post.controller
 import me.insiro.home.server.application.domain.Status
 import me.insiro.home.server.post.dto.category.ModifyCategoryDTO
 import me.insiro.home.server.post.entity.Category
-import me.insiro.home.server.post.entity.JoinedPost
 import me.insiro.home.server.post.entity.Post
 import me.insiro.home.server.post.service.CategoryService
 import me.insiro.home.server.post.service.PostService
@@ -77,9 +76,9 @@ class CategoryControllerTest : AbsControllerTest("/category") {
 
     @Test
     fun `get posts By category`() {
-        val posts = listOf(JoinedPost("testPost", Status.PUBLISHED, User("", "", "", 0b1), category, Post.Id(1)))
+        val posts = listOf(Post.Joined("testPost", Status.PUBLISHED, Post.Joined.AuthorInfo(User.Id(1), "testUser"), category, Post.Id(1)))
         Mockito.`when`(categoryService.findByName(category.name)).thenReturn(category)
-        Mockito.`when`(postService.findPostByCategory(category.id!!)).thenReturn(posts)
+        Mockito.`when`(postService.findPostsByCategory(category.id!!)).thenReturn(posts)
         mockMvc.perform(MockMvcRequestBuilders.post(uri(category.id!!, "posts")))
             .andExpect { status().isOk }
             .andExpect { jsonPath("$").isArray }

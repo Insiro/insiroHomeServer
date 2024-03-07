@@ -46,7 +46,7 @@ class CategoryController(
     @DeleteMapping("{name}")
     fun deleteCategory(@PathVariable name: String): ResponseEntity<String> {
         val categoryId = categoryService.delete(name) ?: throw CategoryNotFoundException(name)
-        postService.changeCategory(categoryId, null)
+        postService.changeCategoryOfPosts(categoryId, null)
         return ResponseEntity("success", HttpStatus.OK)
     }
 
