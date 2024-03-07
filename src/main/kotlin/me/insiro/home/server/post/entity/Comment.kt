@@ -6,7 +6,7 @@ import me.insiro.home.server.application.domain.BaseEntityVO
 import me.insiro.home.server.application.domain.BaseIDTable
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.json.json
-
+import java.time.LocalDateTime
 
 
 object Comments : BaseIDTable() {
@@ -22,6 +22,7 @@ data class Comment(
     var parentId: Id?,
     var author: CommentUserInfo,
     override val id: Id? = null,
+    override val createdAt: LocalDateTime?=null,
 ) : BaseEntityVO() {
     @JvmInline
     @Serializable

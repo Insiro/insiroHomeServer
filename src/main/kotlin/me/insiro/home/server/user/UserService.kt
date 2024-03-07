@@ -8,6 +8,7 @@ import me.insiro.home.server.user.entity.User
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 
 @Service
 class UserService(
@@ -47,7 +48,8 @@ class UserService(
                 newUserDTO.name,
                 passwordEncoder.encode(newUserDTO.password),
                 newUserDTO.email,
-                UserRole.ROLE_USER.key
+                UserRole.ROLE_USER.key,
+                createdAt = LocalDateTime.now()
             )
         )
     }

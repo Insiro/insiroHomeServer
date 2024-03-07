@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import java.time.LocalDateTime
 
 @ExtendWith(MockitoExtension::class)
 class AuthControllerTest : AbsControllerTest("/auth") {
@@ -32,7 +33,7 @@ class AuthControllerTest : AbsControllerTest("/auth") {
         private val passwordEncoder: PasswordEncoder = BCryptPasswordEncoder()
         private const val USER_PWD = "testPwd"
         private const val USER_NAME = "testUser"
-        private val user = User("testUser", passwordEncoder.encode(USER_PWD), "email", -1, User.Id(1))
+        private val user = User("testUser", passwordEncoder.encode(USER_PWD), "email", -1, User.Id(1), LocalDateTime.now())
     }
 
 

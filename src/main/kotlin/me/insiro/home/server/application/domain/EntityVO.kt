@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 abstract class EntityVO<ID : Comparable<ID>> {
     abstract val id: Id<ID>?
 
-    var createdAt: LocalDateTime = LocalDateTime.now()
+    abstract val createdAt: LocalDateTime?
 
     interface Id<ID> {
         val value: ID

@@ -12,6 +12,7 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import org.springframework.stereotype.Repository
+import java.time.LocalDateTime
 
 @Repository
 class UserRepository : AbsRepository<Long, Users, User, User.Id> {
@@ -25,7 +26,7 @@ class UserRepository : AbsRepository<Long, Users, User, User.Id> {
                 it[email] = vo.email
                 it[password] = vo.hashedPassword
                 it[permission] = vo.permission
-                it[createdAt] = vo.createdAt
+                it[createdAt] =LocalDateTime.now()
             }
         }
         val updated = vo.copy(id = User.Id(id))

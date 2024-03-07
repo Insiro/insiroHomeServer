@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
+import java.time.LocalDateTime
 
 @ExtendWith(MockitoExtension::class)
 
@@ -31,6 +32,7 @@ class AbsRepositoryTest : AbsDataBaseTest(TestEntities) {
     data class TestVO(
         var value: Int,
         override val id: Id? = null,
+        override val createdAt: LocalDateTime?=null,
     ) : EntityVO<Int>() {
         @JvmInline
         value class Id(override val value: Int) : EntityVO.Id<Int> {

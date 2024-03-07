@@ -5,6 +5,7 @@ import me.insiro.home.server.application.domain.BaseEntityVO
 import me.insiro.home.server.application.domain.BaseIDTable
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.Column
+import java.time.LocalDateTime
 
 
 object Users : BaseIDTable() {
@@ -21,6 +22,7 @@ data class User(
     var email: String,
     var permission: Int,
     override val id: Id? = null,
+    override val createdAt: LocalDateTime?=null,
 ) : BaseEntityVO() {
     @JvmInline
     @Serializable

@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import java.time.LocalDateTime
 
 class UserControllerTest : AbsControllerTest("/users") {
     private val mockUserService: UserService = mock(UserService::class.java)
@@ -25,7 +26,7 @@ class UserControllerTest : AbsControllerTest("/users") {
     override fun init() {
         val userController = UserController(mockUserService)
         mockMvc = MockMvcBuilders.standaloneSetup(userController).build()
-        user = User("testName", "testPwd", "test@example.com", 0b1, User.Id(1))
+        user =  User("testName", "testPwd", "test@example.com", 0b1, User.Id(1) , LocalDateTime.now())
     }
 
     @Test

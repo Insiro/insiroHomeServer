@@ -7,6 +7,7 @@ import me.insiro.home.server.application.domain.Status
 import me.insiro.home.server.user.entity.User
 import me.insiro.home.server.user.entity.Users
 import org.jetbrains.exposed.dao.id.EntityID
+import java.time.LocalDateTime
 
 object Posts : BaseIDTable() {
     val title = varchar("title", 100)
@@ -21,6 +22,7 @@ data class Post(
     var authorId: User.Id,
     var categoryId: Category.Id,
     override val id: Id? = null,
+    override val createdAt: LocalDateTime?=null,
 ) : BaseEntityVO() {
     @JvmInline
     @Serializable
@@ -35,4 +37,5 @@ data class JoinedPost(
     var author: User,
     var category: Category,
     override val id: Post.Id? = null,
+    override val createdAt: LocalDateTime?=null,
 ) : BaseEntityVO()

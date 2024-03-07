@@ -94,7 +94,7 @@ class UserServiceTest : AbsDataBaseTest(Users) {
         assertEquals(newUserDTO.email, created.email)
         assertEquals(UserRole.ROLE_USER.key, created.permission)
 
-        assertEquals(LocalDateTime.now().month, created.createdAt.month)
+        assertEquals(LocalDateTime.now().month, created.createdAt?.month)
         assertTrue(passwordEncoder.matches(newUserDTO.password, created.hashedPassword))
 
     }

@@ -5,6 +5,7 @@ import me.insiro.home.server.user.entity.User
 import me.insiro.home.server.user.entity.Users
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.time.LocalDateTime
 
 
 object DBInserter {
@@ -14,7 +15,7 @@ object DBInserter {
             it[password] = user.hashedPassword
             it[email] = user.email
             it[permission] = user.permission
-            it[Users.createdAt] = user.createdAt
+            it[Users.createdAt] = LocalDateTime.now()
         }
         user.copy(id = User.Id(id))
     }
@@ -38,7 +39,7 @@ object DBInserter {
         val id = Posts.insertAndGetId {
             it[status] = post.status
             it[title] = post.title
-            it[createdAt] = post.createdAt
+            it[createdAt] = LocalDateTime.now()
             it[category] = post.categoryId.value
             it[authorId] = post.authorId.value
         }
