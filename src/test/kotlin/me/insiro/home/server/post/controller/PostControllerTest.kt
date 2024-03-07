@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import java.time.LocalDateTime
 
 @ExtendWith(MockitoExtension::class)
 class PostControllerTest : AbsControllerTest("/posts") {
@@ -32,10 +33,10 @@ class PostControllerTest : AbsControllerTest("/posts") {
     private val postService = mock(PostService::class.java)
     private val categoryService = mock(CategoryService::class.java)
     private val commentService = mock(CommentService::class.java)
-    private val user = User("testUser", "", "testEmail", 0b1, id = User.Id(1))
-    private val category = Category("Default", Category.Id(0))
-    private val comment = Comment("", Post.Id(1), null, CommentUserInfo.UserInfo(user), Comment.Id(1))
-    private val post = JoinedPost("testPost", Status.PUBLISHED, user, category, id = Post.Id(1))
+    private val user = User("testUser", "", "testEmail", 0b1, id = User.Id(1), LocalDateTime.now())
+    private val category = Category("Default", Category.Id(0), LocalDateTime.now())
+    private val comment = Comment("", Post.Id(1), null, CommentUserInfo.UserInfo(user), Comment.Id(1), LocalDateTime.now())
+    private val post = JoinedPost("testPost", Status.PUBLISHED, user, category, id = Post.Id(1), LocalDateTime.now())
     private val detail = AuthDetail(user)
 
     @BeforeEach
@@ -73,7 +74,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
     @Test
     fun testDeletePostById() {
         Mockito.`when`(postService.deletePost(post.id!!, user)).thenReturn(true)
-        Mockito.`when`(commentService.deleteComment(post.id!!)).thenReturn(1)
+        Mockito.`when`(commentService.deleteCommentByPostId(post.id!!)).thenReturn(1)
         mockMvc.perform(MockMvcRequestBuilders.delete(uri(post.id!!))
             .with {
                 val authentication = UsernamePasswordAuthenticationToken(detail, "", detail.authorities)
@@ -138,7 +139,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
     fun `test add comment with signed user`() {
         val signedDTO = ModifyCommentDTO.Signed("content")
         Mockito.`when`(postService.findPost(post.id!!)).thenReturn(post)
-        Mockito.`when`(commentService.addComment(post.id!!, signedDTO, user.id!!)).thenReturn(comment)
+        Mockito.`when`(commentService.addComment(post.id!!, signedDTO, user)).thenReturn(comment)
         mockMvc.perform(
             MockMvcRequestBuilders.post(uri(post.id!!, "comments", "signed"))
                 .contentType(MediaType.APPLICATION_JSON)
