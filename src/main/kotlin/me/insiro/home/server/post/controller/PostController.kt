@@ -34,7 +34,7 @@ class PostController(
         @RequestParam(required = false) limit: Int? = null
     ): ResponseEntity<List<PostResponseDTO>> {
         val offsetLimit = limit?.let { OffsetLimit(offset, limit) }
-        val posts = postService.findJoinedPosts(offsetLimit).map { PostResponseDTO(it) }
+        val posts = postService.findJoinedPosts(offsetLimit = offsetLimit).map { PostResponseDTO(it) }
         return ResponseEntity(posts, HttpStatus.OK)
     }
 
@@ -46,7 +46,6 @@ class PostController(
         val category = newPostDTO.category?.let {
             categoryService.findByName(it) ?: throw CategoryNotFoundException(it)
         }
-
         val user = getSignedUser()!!
         val post = postService.createPost(newPostDTO, user, category?.id)
         return ResponseEntity(
@@ -59,7 +58,7 @@ class PostController(
     @GetMapping("{id}")
     fun getPost(
         @PathVariable id: Post.Id,
-        @RequestParam(required = false) comment: Boolean = false,
+        @RequestParam(required = false) comment: Boolean? = false,
         @RequestParam(required = false) offset: Long = 0,
         @RequestParam(required = false) limit: Int? = null
     ): ResponseEntity<PostResponseDTO> {
@@ -107,10 +106,10 @@ class PostController(
         return ResponseEntity(comments, HttpStatus.OK)
     }
 
-    @PostMapping("{id}/comments/signed")
+    @PostMapping("{id}/comments")
     fun addComment(
         @PathVariable id: Post.Id,
-        @RequestBody newCommentDTO: ModifyCommentDTO.Signed
+        @RequestBody newCommentDTO: ModifyCommentDTO
     ): ResponseEntity<CommentDTO> {
         val user = getSignedUser()
         postService.findPost(id) ?: throw PostNotFoundException(id)
@@ -118,13 +117,16 @@ class PostController(
         return ResponseEntity(CommentDTO(comment), HttpStatus.CREATED)
     }
 
-    @PostMapping("{id}/comments")
-    fun addComment(
-        @PathVariable id: Post.Id,
-        @RequestBody newCommentDTO: ModifyCommentDTO.Anonymous
-    ): ResponseEntity<CommentDTO> {
-        postService.findPost(id) ?: throw PostNotFoundException(id)
-        val comment = commentService.addComment(id, newCommentDTO)
-        return ResponseEntity(CommentDTO(comment), HttpStatus.CREATED)
+    @GetMapping("categories/{categoryName}")
+    fun getPostsByCategory(
+        @PathVariable categoryName: String,
+        @RequestParam(required = false) offset: Long = 0,
+        @RequestParam(required = false) limit: Int? = null
+    ): ResponseEntity<List<PostResponseDTO>> {
+        val category = categoryService.findByName(categoryName) ?: throw CategoryNotFoundException(categoryName)
+        val offsetLimit = limit?.let { OffsetLimit(offset, limit) }
+        val posts = postService.findJoinedPosts(category.id, offsetLimit).map { PostResponseDTO(it) }
+        return ResponseEntity(posts, HttpStatus.OK)
     }
+
 }

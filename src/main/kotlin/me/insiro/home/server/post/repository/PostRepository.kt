@@ -61,7 +61,7 @@ class PostRepository : AbsRepository<Long, Posts, Post.Raw, Post.Id> {
             it[createdAt] = created
             it[title] = vo.title
         }
-        vo.copy(id = Post.Id(id))
+        vo.copy(id = Post.Id(id), createdAt = created)
     }
 
     fun update(
@@ -98,7 +98,7 @@ class PostRepository : AbsRepository<Long, Posts, Post.Raw, Post.Id> {
             val query = Posts.join(Users, JoinType.LEFT, onColumn = Posts.authorId, otherColumn = Users.id)
                 .join(Categories, JoinType.LEFT, onColumn = Posts.categoryId, otherColumn = Categories.id)
                 .select(Posts.columns + Users.name + Categories.name)
-                .apply { offsetLimit?.let{this.limit(it.limit, it.offset)} }
+                .apply { offsetLimit?.let { this.limit(it.limit, it.offset) } }
             categoryId?.let {
                 query.adjustWhere { Posts.categoryId eq categoryId.value }
             }

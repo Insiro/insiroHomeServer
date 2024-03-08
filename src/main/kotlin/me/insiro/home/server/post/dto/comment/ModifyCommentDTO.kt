@@ -1,6 +1,14 @@
 package me.insiro.home.server.post.dto.comment
 
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type")
+@JsonSubTypes(
+    JsonSubTypes.Type(value = ModifyCommentDTO.Signed::class, name = "signed"),
+    JsonSubTypes.Type(value = ModifyCommentDTO.Anonymous::class, name = "anonymous")
+)
 sealed interface ModifyCommentDTO : ModifierDTO {
     val content: String
 

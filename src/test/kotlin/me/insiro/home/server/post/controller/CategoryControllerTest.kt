@@ -78,7 +78,7 @@ class CategoryControllerTest : AbsControllerTest("/category") {
     fun `get posts By category`() {
         val posts = listOf(Post.Joined("testPost", Status.PUBLISHED, Post.Joined.AuthorInfo(User.Id(1), "testUser"), category, Post.Id(1)))
         Mockito.`when`(categoryService.findByName(category.name)).thenReturn(category)
-        Mockito.`when`(postService.findPostsByCategory(category.id!!)).thenReturn(posts)
+        Mockito.`when`(postService.findJoinedPosts(category.id!!)).thenReturn(posts)
         mockMvc.perform(MockMvcRequestBuilders.post(uri(category.id!!, "posts")))
             .andExpect { status().isOk }
             .andExpect { jsonPath("$").isArray }

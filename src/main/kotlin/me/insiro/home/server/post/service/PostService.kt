@@ -19,7 +19,7 @@ class PostService(private val postRepository: PostRepository) {
             is Post.Joined -> post.author.id
             is Post.Raw -> post.authorId
         }
-        if (authorId != user.id || UserRole.ROLE_ADMIN.isGranted(user.permission))
+        if (authorId != user.id || !UserRole.ROLE_ADMIN.isGranted(user.permission))
             throw PostModifyForbiddenException(post.id!!, user.id!!)
     }
 
@@ -42,7 +42,7 @@ class PostService(private val postRepository: PostRepository) {
     fun deletePost(id: Post.Id, user: User): Boolean {
         val post = postRepository.findById(id) ?: return false
         validateModifyPermission(post, user)
-        return postRepository.delete(id)
+        return postRepository.delete(post)
         //TODO: delete file content Using FileService
     }
 
@@ -54,16 +54,12 @@ class PostService(private val postRepository: PostRepository) {
         return postRepository.findById(id)
     }
 
-    fun findPosts(offsetLimit: OffsetLimit? = null): List<Post.Raw> {
+    fun findPosts(id: Category.Id?=null,offsetLimit: OffsetLimit? = null): List<Post.Raw> {
         return postRepository.find(offsetLimit)
     }
 
-    fun findJoinedPosts(offsetLimit: OffsetLimit? = null): List<Post.Joined> {
-        return postRepository.findJoining(offsetLimit = offsetLimit)
-    }
-
-    fun findPostsByCategory(id: Category.Id): List<Post.Joined> {
-        return postRepository.findJoining(categoryId = id)
+    fun findJoinedPosts(id: Category.Id?=null, offsetLimit: OffsetLimit? = null): List<Post.Joined> {
+        return postRepository.findJoining(categoryId = id, offsetLimit = offsetLimit)
     }
 
     fun changeCategoryOfPosts(id: Category.Id, newId: Category.Id?): Int {

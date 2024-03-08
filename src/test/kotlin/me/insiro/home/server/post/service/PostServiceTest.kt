@@ -62,7 +62,7 @@ class PostServiceTest : AbsDataBaseTest(Users, Categories, Posts) {
 
     @Test
     fun findPostByCategory() {
-        val posts = postService.findPostsByCategory(category.id!!)
+        val posts = postService.findJoinedPosts(category.id!!)
         assertEquals(1, posts.size)
     }
 

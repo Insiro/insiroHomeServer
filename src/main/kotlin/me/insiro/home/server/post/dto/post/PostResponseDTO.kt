@@ -16,9 +16,14 @@ data class PostResponseDTO(
     val category: CategoryDTO?,
     val status: Status,
     override val createdAt: LocalDateTime,
-    val comments: List<CommentDTO>
+    val comments: List<CommentDTO>?
 ) : IResponseDTO<Long> {
-    constructor(post: Post.Raw, author: SimpleUserDTO, category: CategoryDTO?=null, comments: List<CommentDTO> = listOf()) : this(
+    constructor(
+        post: Post.Raw,
+        author: SimpleUserDTO,
+        category: CategoryDTO? = null,
+        comments: List<CommentDTO>? = null
+    ) : this(
         post.id!!.value,
         post.title,
         author,
@@ -28,7 +33,7 @@ data class PostResponseDTO(
         comments = comments,
     )
 
-    constructor(post: Post.Joined, comments: List<CommentDTO> = listOf()) : this(
+    constructor(post: Post.Joined, comments: List<CommentDTO>? = null) : this(
         post.id!!.value,
         post.title,
         SimpleUserDTO(post.author.id.value, post.author.name),
