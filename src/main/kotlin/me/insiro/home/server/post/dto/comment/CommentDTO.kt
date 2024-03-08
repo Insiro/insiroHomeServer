@@ -11,6 +11,7 @@ data class CommentDTO(
     val content: String,
     val user: CommentUserInfo,
     override val createdAt: LocalDateTime,
+    val children: List<CommentDTO>? = null
 ) : IResponseDTO<Long> {
     constructor(comment: Comment) : this(comment.id!!.value, comment.content, comment.author, comment.createdAt!!)
 }

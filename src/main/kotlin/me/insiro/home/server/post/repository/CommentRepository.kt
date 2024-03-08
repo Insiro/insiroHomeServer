@@ -48,12 +48,14 @@ class CommentRepository : AbsRepository<Long, Comments, Comment, Comment.Id> {
         vo.copy(id = Comment.Id(id.value))
     }
 
-    fun find(postId: Post.Id? = null, offsetLimit: OffsetLimit? = null): List<Comment> = transaction {
-        val query = Comments.selectAll()
-        postId?.let { query.adjustWhere { Comments.id eq postId.value } }
-        offsetLimit?.let { query.limit(offsetLimit.limit, offsetLimit.offset) }
-        query.map { relationObjectMapping(it) }
-    }
+    fun find(postId: Post.Id? = null, parentId: Comment.Id? = null, offsetLimit: OffsetLimit? = null): List<Comment> =
+        transaction {
+            val query = Comments.selectAll()
+            postId?.let { query.adjustWhere { Comments.id eq postId.value } }
+            parentId?.let { query.adjustWhere { Comments.parentId eq it.value } }
+            offsetLimit?.let { query.limit(offsetLimit.limit, offsetLimit.offset) }
+            query.map { relationObjectMapping(it) }
+        }
 
     fun delete(postId: Post.Id): Int = transaction {
         Comments.deleteWhere { Comments.postId eq postId.value }
