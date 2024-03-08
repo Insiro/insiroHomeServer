@@ -31,12 +31,13 @@ class UserService(
     }
 
     fun updateUser(id: User.Id, updateUserDTO: UpdateUserDTO): User? {
-
-        return userRepository.update(id) {
-            updateUserDTO.name?.let { value -> it[name] = value }
-            updateUserDTO.email?.let { value -> it[email] = value }
-            updateUserDTO.password?.let { value -> it[password] = passwordEncoder.encode(value) }
-        }
+        val newPwd = updateUserDTO.password?.let { passwordEncoder.encode(it) }
+        return userRepository.update(
+            id,
+            name = updateUserDTO.name,
+            email = updateUserDTO.email,
+            password = newPwd
+        )
     }
 
     fun deleteUser(id: User.Id): Boolean {
