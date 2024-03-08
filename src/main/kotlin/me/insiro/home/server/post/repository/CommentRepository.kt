@@ -22,8 +22,8 @@ class CommentRepository : AbsRepository<Long, Comments, Comment, Comment.Id> {
             Post.Id(it[Comments.postId].value),
             it[Comments.parentId]?.value?.let { id -> Comment.Id(id) },
             it[Comments.authorInfo],
-            Comment.Id(it[Comments.id].value)
-
+            Comment.Id(it[Comments.id].value),
+            it[Comments.createdAt]
         )
     }
 
@@ -38,6 +38,7 @@ class CommentRepository : AbsRepository<Long, Comments, Comment, Comment.Id> {
 
 
     override fun new(vo: Comment): Comment = transaction {
+        val now = LocalDateTime.now()
         val id = Comments.insertAndGetId {
             it[content] = vo.content
             it[postId] = vo.postId.value
@@ -45,7 +46,7 @@ class CommentRepository : AbsRepository<Long, Comments, Comment, Comment.Id> {
             it[parentId] = vo.parentId?.value
             it[authorInfo] = vo.author
         }
-        vo.copy(id = Comment.Id(id.value))
+        vo.copy(id = Comment.Id(id.value), createdAt = now)
     }
 
     fun find(postId: Post.Id? = null, parentId: Comment.Id? = null, offsetLimit: OffsetLimit? = null): List<Comment> =

@@ -1,6 +1,7 @@
 package me.insiro.home.server.post.service
 
 import me.insiro.home.server.application.domain.OffsetLimit
+import me.insiro.home.server.application.exception.UnAuthorizedException
 import me.insiro.home.server.post.dto.comment.ModifierDTO
 import me.insiro.home.server.post.dto.comment.ModifyCommentDTO
 import me.insiro.home.server.post.entity.Comment
@@ -42,7 +43,7 @@ class CommentService(
                 passwordEncoder.encode(commentDTO.password)
             )
 
-            is ModifyCommentDTO.Signed -> CommentUserInfo.UserInfo(user!!)
+            is ModifyCommentDTO.Signed -> user?.let { CommentUserInfo.UserInfo(user) }?:throw UnAuthorizedException()
         }
     }
 
