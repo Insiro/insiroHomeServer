@@ -1,5 +1,6 @@
 package me.insiro.home.server.user.controller
 
+import me.insiro.home.server.application.domain.OffsetLimit
 import me.insiro.home.server.user.UserService
 import me.insiro.home.server.user.dto.NewUserDTO
 import me.insiro.home.server.user.dto.UpdateUserDTO
@@ -14,8 +15,12 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("users")
 class UserController(private val userService: UserService) {
     @GetMapping
-    fun getAllUser(@RequestParam(required = false) offset: Int = 0, @RequestParam(required = false) limit: Long? = null): ResponseEntity<List<UserDTO>> {
-        val users = userService.getUsers(offset, limit).map(UserDTO.Companion::fromUser)
+    fun getAllUser(
+        @RequestParam(required = false) offset: Long = 0,
+        @RequestParam(required = false) limit: Int? = null
+    ): ResponseEntity<List<UserDTO>> {
+        val offsetLimit = limit?.let { OffsetLimit(offset, limit) }
+        val users = userService.getUsers(offsetLimit).map(UserDTO.Companion::fromUser)
         return ResponseEntity(users, HttpStatus.OK)
     }
 

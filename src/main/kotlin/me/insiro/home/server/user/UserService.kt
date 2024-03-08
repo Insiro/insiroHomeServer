@@ -1,14 +1,15 @@
 package me.insiro.home.server.user
 
+import me.insiro.home.server.application.domain.OffsetLimit
 import me.insiro.home.server.user.dto.AuthDetail
 import me.insiro.home.server.user.dto.NewUserDTO
 import me.insiro.home.server.user.dto.UpdateUserDTO
 import me.insiro.home.server.user.dto.UserRole
 import me.insiro.home.server.user.entity.User
-import me.insiro.home.server.user.entity.Users
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 
 @Service
 class UserService(
@@ -21,11 +22,7 @@ class UserService(
     }
 
     fun getUser(userName: String): User? {
-        val users = userRepository.find { Users.name eq userName }
-        if (users.isEmpty())
-            return null
-        return users[0]
-
+        return userRepository.find(userName)
     }
 
     override fun loadUserByUsername(username: String): AuthDetail? {
@@ -34,11 +31,13 @@ class UserService(
     }
 
     fun updateUser(id: User.Id, updateUserDTO: UpdateUserDTO): User? {
-        return userRepository.update(id) {
-            updateUserDTO.name?.let { value -> it[name] = value }
-            updateUserDTO.email?.let { value -> it[email] = value }
-            updateUserDTO.password?.let { value -> it[password] = passwordEncoder.encode(value) }
-        }
+        val newPwd = updateUserDTO.password?.let { passwordEncoder.encode(it) }
+        return userRepository.update(
+            id,
+            name = updateUserDTO.name,
+            email = updateUserDTO.email,
+            password = newPwd
+        )
     }
 
     fun deleteUser(id: User.Id): Boolean {
@@ -51,12 +50,13 @@ class UserService(
                 newUserDTO.name,
                 passwordEncoder.encode(newUserDTO.password),
                 newUserDTO.email,
-                UserRole.ROLE_USER.key
+                UserRole.ROLE_USER.key,
+                createdAt = LocalDateTime.now()
             )
         )
     }
 
-    fun getUsers(offset: Int = 0, limit: Long? = null): List<User> {
-        return userRepository.find(offset, limit)
+    fun getUsers(offsetLimit: OffsetLimit?): List<User> {
+        return userRepository.find(offsetLimit)
     }
 }

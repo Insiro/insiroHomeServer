@@ -1,3 +1,3 @@
 package me.insiro.home.server.post.dto.category
 
-data class UpdateCategoryDTO (val name: String)
+data class ModifyCategoryDTO (val name: String)

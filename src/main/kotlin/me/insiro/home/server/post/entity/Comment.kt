@@ -1,27 +1,32 @@
 package me.insiro.home.server.post.entity
 
 import kotlinx.serialization.Serializable
-import me.insiro.home.server.application.domain.BaseEntityVO
+import kotlinx.serialization.json.Json
+import me.insiro.home.server.application.domain.BaseIDTable
+import me.insiro.home.server.application.domain.IBaseEntityVO
 import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.sql.json.json
+import java.time.LocalDateTime
 
-@Serializable
-sealed class CommentUserInfo {
-    @Serializable
-    data class UserInfo(val userId: String)
 
-    @Serializable
-    data class AndrogynousInfo(val name: String, val pwd: String? = null)
+object Comments : BaseIDTable() {
+    val content = varchar("content", 300)
+    val postId = reference("postId", Posts.id)
+    val parentId = long("parentId").nullable()
+    val authorInfo = json<CommentUserInfo>("author_json", Json { prettyPrint = true })
 }
 
 data class Comment(
     var content: String,
-    var postId: Long,
-    var parentId: Long?,
+    var postId: Post.Id,
+    var parentId: Id?,
     var author: CommentUserInfo,
-    override val id: Id?,
-) : BaseEntityVO() {
+    override val id: Id? = null,
+    override val createdAt: LocalDateTime? = null,
+) : IBaseEntityVO {
     @JvmInline
-    value class Id(override val value: Long) : BaseEntityVO.Id {
+    @Serializable
+    value class Id(override val value: Long) : IBaseEntityVO.Id {
         constructor(entityID: EntityID<Long>) : this(entityID.value)
     }
 }

@@ -1,14 +1,14 @@
 package me.insiro.home.server.application
 
-import me.insiro.home.server.application.domain.EntityVO
+import me.insiro.home.server.application.domain.IEntityVO
+import me.insiro.home.server.application.domain.OffsetLimit
 import org.jetbrains.exposed.dao.DaoEntityID
 import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.statements.UpdateStatement
 import org.jetbrains.exposed.sql.transactions.transaction
 
-interface AbsRepository<Id : Comparable<Id>, Table, VO, VoId> where   VO : EntityVO<Id>, Table : IdTable<Id>, VoId : EntityVO.Id<Id> {
+interface AbsRepository<Id : Comparable<Id>, Table, VO, VoId> where   VO : IEntityVO<Id>, Table : IdTable<Id>, VoId : IEntityVO.Id<Id> {
     val table: Table
     fun relationObjectMapping(it: ResultRow): VO
     fun findById(id: VoId): VO? = transaction {
@@ -19,31 +19,15 @@ interface AbsRepository<Id : Comparable<Id>, Table, VO, VoId> where   VO : Entit
         ret
     }
 
-    fun find(limit: Int = 0, offset: Long? = null): List<VO> = transaction {
+    fun find(limitOption: OffsetLimit? = null): List<VO> = transaction {
         table.selectAll()
-            .let { query -> offset?.let { query.limit(limit, offset) } ?: query }
+            .let { query -> limitOption?.let { query.limit(it.limit, it.offset) } ?: query }
             .map { relationObjectMapping(it) }
-    }
-
-    fun find(op: SqlExpressionBuilder.() -> Op<Boolean>): List<VO> = transaction {
-        table.selectAll().where(op).map { relationObjectMapping(it) }
     }
 
     fun new(vo: VO): VO
 
     fun update(vo: VO): VO
-
-    fun update(where: (SqlExpressionBuilder.() -> Op<Boolean>)? = null, body: Table.(UpdateStatement) -> Unit): Int =
-        transaction {
-            table.update(where, body = body)
-        }
-
-    fun update(id: VoId, body: Table.(UpdateStatement) -> Unit): VO? = transaction {
-        val ex: SqlExpressionBuilder.() -> Op<Boolean> = { table.id.eq(DaoEntityID(id.value, table)) }
-        val nUpdated = table.update(ex, body = body)
-        if (nUpdated == 0) return@transaction null
-        findById(id)
-    }
 
     private fun delete(id: Id): Boolean = transaction {
         0 != table.deleteWhere { this.id eq DaoEntityID(id, table) }
@@ -55,9 +39,5 @@ interface AbsRepository<Id : Comparable<Id>, Table, VO, VoId> where   VO : Entit
 
     fun delete(vo: VO): Boolean {
         return vo.id?.let { delete(it.value) } ?: false
-    }
-
-    fun delete(op: Table.(ISqlExpressionBuilder) -> Op<Boolean>): Int = transaction {
-        table.deleteWhere(op = op)
     }
 }

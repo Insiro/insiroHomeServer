@@ -1,24 +1,25 @@
 package me.insiro.home.server.application
 
-import me.insiro.home.server.application.domain.EntityVO
+import me.insiro.home.server.application.domain.IEntityVO
+import me.insiro.home.server.application.domain.OffsetLimit
 import me.insiro.home.server.testUtils.AbsDataBaseTest
-import org.jetbrains.exposed.dao.DaoEntityID
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
+import java.time.LocalDateTime
 
 @ExtendWith(MockitoExtension::class)
 
-class AbsRepositoryTest : AbsDataBaseTest(listOf(TestEntities)) {
+class AbsRepositoryTest : AbsDataBaseTest(TestEntities) {
     object TestEntities : IntIdTable() {
         val value = integer("value")
     }
@@ -33,9 +34,10 @@ class AbsRepositoryTest : AbsDataBaseTest(listOf(TestEntities)) {
     data class TestVO(
         var value: Int,
         override val id: Id? = null,
-    ) : EntityVO<Int>() {
+        override val createdAt: LocalDateTime? = null,
+    ) : IEntityVO<Int> {
         @JvmInline
-        value class Id(override val value: Int) : EntityVO.Id<Int> {
+        value class Id(override val value: Int) : IEntityVO.Id<Int> {
             constructor(id: EntityID<Int>) : this(id.value)
         }
     }
@@ -48,16 +50,20 @@ class AbsRepositoryTest : AbsDataBaseTest(listOf(TestEntities)) {
         }
 
         override fun new(vo: TestVO): TestVO {
-            TODO("Not yet implemented")
+            throw Exception("Will Not Tested")
         }
 
         override fun update(vo: TestVO): TestVO {
-            TODO("Not yet implemented")
+            throw Exception("Will Not Tested")
         }
     }
 
     private val testRepository = TestRepository()
     private lateinit var testEntity: TestEntity
+    override fun resetDataBase() = transaction {
+        SchemaUtils.drop(TestEntities)
+        SchemaUtils.create(TestEntities)
+    }
 
     @BeforeEach
     fun resetTestState() {
@@ -84,20 +90,8 @@ class AbsRepositoryTest : AbsDataBaseTest(listOf(TestEntities)) {
         assertEquals(1, voList.size)
         assertEquals(testEntity.id.value, voList[0].id!!.value)
         assertEquals(testEntity.value, voList[0].value)
-        val voList2 = testRepository.find(offset = 2)
+        val voList2 = testRepository.find(limitOption = OffsetLimit(2, 10))
         assertEquals(0, voList2.size)
-    }
-
-    @Test
-    fun update() {
-        val updated = testRepository.update {
-            this.id eq testEntity.id
-            it[id] = DaoEntityID(testEntity.id.value + 1, TestEntities)
-        }
-        val updatedEntity = transaction { TestEntity.findById(testEntity.id.value + 1) }
-
-        assertEquals(1, updated)
-        assertNotNull(updatedEntity)
     }
 
     @Test
@@ -117,7 +111,7 @@ class AbsRepositoryTest : AbsDataBaseTest(listOf(TestEntities)) {
 
     @Test
     fun deleteByExpression() {
-        testRepository.delete { this.id eq testEntity.id }
+        testRepository.delete(TestVO.Id(testEntity.id))
         val entity = transaction { TestEntity.findById(testEntity.id) }
         assertNull(entity)
     }

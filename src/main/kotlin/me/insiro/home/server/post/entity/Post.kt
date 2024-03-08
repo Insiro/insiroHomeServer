@@ -1,20 +1,53 @@
 package me.insiro.home.server.post.entity
 
-import jdk.jshell.Snippet.Status
-import me.insiro.home.server.application.domain.BaseEntityVO
-import me.insiro.home.server.application.domain.EntityVO
+import kotlinx.serialization.Serializable
+import me.insiro.home.server.application.domain.BaseIDTable
+import me.insiro.home.server.application.domain.IBaseEntityVO
+import me.insiro.home.server.application.domain.Status
+import me.insiro.home.server.user.entity.User
+import me.insiro.home.server.user.entity.Users
 import org.jetbrains.exposed.dao.id.EntityID
+import java.time.LocalDateTime
 
-data class Post(
-    var title: String,
-    var status: Status,
-    var authorId: Long,
-    var category: Int?,
-    val fileName: String,
-    override val id: EntityVO.Id<Long>?,
-) : BaseEntityVO() {
+object Posts : BaseIDTable() {
+    val title = varchar("title", 100)
+    val status = enumeration<Status>("status")
+    val authorId = reference("authorId", Users.id)
+    val categoryId = reference("category", Categories.id).nullable()
+}
+
+sealed interface Post : IBaseEntityVO {
+    var title: String
+    var status: Status
+    override val id:Id?
+
     @JvmInline
-    value class Id(override val value: Long) : BaseEntityVO.Id {
+    @Serializable
+    value class Id(override val value: Long) : IBaseEntityVO.Id {
         constructor(entityID: EntityID<Long>) : this(entityID.value)
     }
+
+
+    data class Raw(
+        override var title: String,
+        override var status: Status,
+        var authorId: User.Id,
+        var categoryId: Category.Id?,
+        override val id: Id? = null,
+        override val createdAt: LocalDateTime? = null,
+    ) : Post
+
+    data class Joined(
+        override var title: String,
+        override var status: Status,
+        var author: AuthorInfo,
+        var category: Category? = null,
+        override val id: Id? = null,
+        override val createdAt: LocalDateTime? = null,
+    ) : Post {
+        data class AuthorInfo(val id: User.Id, val name: String)
+    }
+
+
 }
+

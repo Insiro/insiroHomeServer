@@ -1,9 +1,11 @@
 package me.insiro.home.server.user.entity
 
-import me.insiro.home.server.application.domain.BaseEntityVO
+import kotlinx.serialization.Serializable
+import me.insiro.home.server.application.domain.IBaseEntityVO
 import me.insiro.home.server.application.domain.BaseIDTable
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.Column
+import java.time.LocalDateTime
 
 
 object Users : BaseIDTable() {
@@ -20,9 +22,11 @@ data class User(
     var email: String,
     var permission: Int,
     override val id: Id? = null,
-) : BaseEntityVO() {
+    override val createdAt: LocalDateTime?=null,
+) : IBaseEntityVO {
     @JvmInline
-    value class Id(override val value: Long) : BaseEntityVO.Id {
+    @Serializable
+    value class Id(override val value: Long) : IBaseEntityVO.Id {
         constructor(entityID: EntityID<Long>) : this(entityID.value)
     }
 }

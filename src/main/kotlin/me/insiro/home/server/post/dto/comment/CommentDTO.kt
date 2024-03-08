@@ -1,8 +1,23 @@
 package me.insiro.home.server.post.dto.comment
 
+import me.insiro.home.server.application.domain.IResponseDTO
+import me.insiro.home.server.post.entity.Comment
+import java.time.LocalDateTime
+
+
 data class CommentDTO(
-        val id:Long,
-        val content: String,
-        val userName: String,
-        val userId: String?,
-)
+    override val id: Long,
+    val content: String,
+    val parentId: Long?,
+    val user: CommentUserInfoDTO,
+    override val createdAt: LocalDateTime,
+    val children: List<CommentDTO>? = null
+) : IResponseDTO<Long> {
+    constructor(comment: Comment) : this(
+        comment.id!!.value,
+        comment.content,
+        comment.parentId?.value,
+        CommentUserInfoDTO.new(comment.author),
+        comment.createdAt!!
+    )
+}
