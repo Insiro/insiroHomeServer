@@ -19,7 +19,7 @@ class PostService(private val postRepository: PostRepository) {
             is Post.Joined -> post.author.id
             is Post.Raw -> post.authorId
         }
-        if (authorId != user.id || !UserRole.ROLE_ADMIN.isGranted(user.permission))
+        if (authorId != user.id && !UserRole.ROLE_ADMIN.isGranted(user.permission))
             throw PostModifyForbiddenException(post.id!!, user.id!!)
     }
 
