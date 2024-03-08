@@ -30,8 +30,8 @@ class CommentService(
             }
 
             is CommentUserInfo.UserInfo -> {
-                if (author.id != user!!.id && UserRole.ROLE_ADMIN.isGranted(user.permission))
-                    throw CommentModifyForbiddenException(comment.id!!, user.id!!)
+                if (author.id != user?.id && !UserRole.ROLE_ADMIN.isGranted(user))
+                    throw CommentModifyForbiddenException(comment.id!!, user?.id)
             }
         }
     }
@@ -65,7 +65,7 @@ class CommentService(
         assert(user != null || modifyDTO is ModifierDTO.Anonymous)
         val comment = commentRepository.findById(id) ?: return false
         validateModify(comment, modifyDTO, user)
-        return (commentRepository.delete(id))
+        return (commentRepository.delete(comment))
     }
 
     fun getComment(id: Comment.Id): Comment? {

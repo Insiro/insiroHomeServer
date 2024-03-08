@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus
 
 class CommentModifyForbiddenException : AbsException {
     private constructor(msg: String) : super(HttpStatus.FORBIDDEN, msg)
-    constructor(id: Comment.Id, userId: User.Id) : this("$userId is not Writer of comment (id : $id)")
+    constructor(id: Comment.Id, userId: User.Id?) : this("${userId ?: "anonymous"} is not Writer of comment (id : $id)")
     constructor(
         id: Comment.Id,
         userName: String

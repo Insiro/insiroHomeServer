@@ -1,10 +1,17 @@
 package me.insiro.home.server.user.dto
 
+import me.insiro.home.server.user.entity.User
+
 enum class UserRole(val key: Int) {
     ROLE_ADMIN(-1), ROLE_USER(0), ROLE_WRITER(0x1);
 
-    fun isGranted(permissionKey: Int): Boolean {
+    private fun isGranted(permissionKey: Int): Boolean {
         return (key and permissionKey) == key
+    }
+
+    fun isGranted(user: User?): Boolean {
+        user ?: return false
+        return isGranted(user.permission)
     }
 
     companion object {

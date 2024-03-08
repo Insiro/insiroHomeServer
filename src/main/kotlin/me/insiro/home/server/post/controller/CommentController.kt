@@ -28,7 +28,7 @@ class CommentController(private val commentService: CommentService) : IControlle
     @PostMapping("{id}")
     fun appendComment(
         @PathVariable id: Comment.Id,
-        @RequestParam modifyCommentDTO: ModifyCommentDTO
+        @RequestBody modifyCommentDTO: ModifyCommentDTO
     ): ResponseEntity<CommentDTO> {
         val user = getSignedUser()
         val parent = commentService.getComment(id) ?: throw CommentNotFoundException(id)
