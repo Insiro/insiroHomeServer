@@ -8,6 +8,7 @@ import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -49,16 +50,20 @@ class AbsRepositoryTest : AbsDataBaseTest(TestEntities) {
         }
 
         override fun new(vo: TestVO): TestVO {
-            TODO("Not yet implemented")
+            throw Exception("Will Not Tested")
         }
 
         override fun update(vo: TestVO): TestVO {
-            TODO("Not yet implemented")
+            throw Exception("Will Not Tested")
         }
     }
 
     private val testRepository = TestRepository()
     private lateinit var testEntity: TestEntity
+    override fun resetDataBase() = transaction {
+        SchemaUtils.drop(TestEntities)
+        SchemaUtils.create(TestEntities)
+    }
 
     @BeforeEach
     fun resetTestState() {
