@@ -7,7 +7,7 @@ import java.time.LocalDateTime
 data class CategoryDTO(
     val name: String,
     override val id: Int,
-    override val createdAt: LocalDateTime,
+    override val createdAt: LocalDateTime?,
 ) : IResponseDTO<Int> {
-    constructor(category: Category) : this(category.name, category.id!!.value, category.createdAt!!)
+    constructor(category: Category) : this(category.name, category.id!!.value, category.createdAt)
 }

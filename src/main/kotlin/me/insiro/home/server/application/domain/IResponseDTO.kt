@@ -4,5 +4,5 @@ import java.time.LocalDateTime
 
 interface IResponseDTO<T> {
     val id:T
-    val createdAt: LocalDateTime
+    val createdAt: LocalDateTime?
 }
