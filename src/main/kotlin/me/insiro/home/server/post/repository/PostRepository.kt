@@ -1,6 +1,7 @@
 package me.insiro.home.server.post.repository
 
 import me.insiro.home.server.application.AbsRepository
+import me.insiro.home.server.application.domain.OffsetLimit
 import me.insiro.home.server.application.domain.Status
 import me.insiro.home.server.post.entity.Categories
 import me.insiro.home.server.post.entity.Category
@@ -92,12 +93,12 @@ class PostRepository : AbsRepository<Long, Posts, Post.Raw, Post.Id> {
         vo
     }
 
-    fun findJoining(categoryId: Category.Id? = null, limit: Int = 0, offset: Long? = null): List<Post.Joined> =
+    fun findJoining(categoryId: Category.Id? = null, offsetLimit: OffsetLimit? = null): List<Post.Joined> =
         transaction {
             val query = Posts.join(Users, JoinType.LEFT, onColumn = Posts.authorId, otherColumn = Users.id)
                 .join(Categories, JoinType.LEFT, onColumn = Posts.categoryId, otherColumn = Categories.id)
                 .select(Posts.columns + Users.name + Categories.name)
-                .let { query -> offset?.let { query.limit(limit, offset) } ?: query }
+                .apply { offsetLimit?.let{this.limit(it.limit, it.offset)} }
             categoryId?.let {
                 query.adjustWhere { Posts.categoryId eq categoryId.value }
             }

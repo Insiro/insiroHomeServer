@@ -14,14 +14,15 @@ import org.springframework.stereotype.Service
 @Service
 class PostService(private val postRepository: PostRepository) {
     @Throws(PostModifyForbiddenException::class)
-    private fun validateModifyPermission(post:Post, user:User){
-        val authorId = when(post){
-            is Post.Joined ->post.author.id
+    private fun validateModifyPermission(post: Post, user: User) {
+        val authorId = when (post) {
+            is Post.Joined -> post.author.id
             is Post.Raw -> post.authorId
         }
         if (authorId != user.id || UserRole.ROLE_ADMIN.isGranted(user.permission))
             throw PostModifyForbiddenException(post.id!!, user.id!!)
     }
+
     fun createPost(createDTO: NewPostDTO, user: User, categoryId: Category.Id? = null): Post.Raw {
         val post = Post.Raw(createDTO.title, createDTO.status, user.id!!, categoryId)
         //TODO: save file content Using FileService
@@ -45,7 +46,7 @@ class PostService(private val postRepository: PostRepository) {
         //TODO: delete file content Using FileService
     }
 
-    fun findJoinedPost(id:Post.Id):Post.Joined?{
+    fun findJoinedPost(id: Post.Id): Post.Joined? {
         return postRepository.findByIdJoining(id)
     }
 
@@ -53,12 +54,12 @@ class PostService(private val postRepository: PostRepository) {
         return postRepository.findById(id)
     }
 
-    fun findPosts(offsetLimit: OffsetLimit?): List<Post.Raw> {
+    fun findPosts(offsetLimit: OffsetLimit? = null): List<Post.Raw> {
         return postRepository.find(offsetLimit)
     }
 
-    fun findJoinedPosts(limit: Int = 0, offset: Long? = null): List<Post.Joined> {
-        return postRepository.findJoining(limit = limit, offset = offset)
+    fun findJoinedPosts(offsetLimit: OffsetLimit? = null): List<Post.Joined> {
+        return postRepository.findJoining(offsetLimit = offsetLimit)
     }
 
     fun findPostsByCategory(id: Category.Id): List<Post.Joined> {

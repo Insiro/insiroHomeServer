@@ -56,8 +56,8 @@ class CommentService(
         return commentRepository.update(updated)
     }
 
-    fun findComments(id: Post.Id, offsetLimit: OffsetLimit?): List<Comment> {
-        return commentRepository.find(postId = id, offsetLimit)
+    fun findComments(id: Post.Id?=null, offsetLimit: OffsetLimit?=null, parent:Comment.Id?=null): List<Comment> {
+        return commentRepository.find(postId = id, offsetLimit = offsetLimit, parentId = parent)
     }
 
     fun deleteComment(id: Comment.Id, modifyDTO: ModifierDTO, user: User? = null): Boolean {
@@ -79,7 +79,7 @@ class CommentService(
         return commentRepository.new(comment)
     }
 
-    fun appendComment(parent: Comment, commentDTO: ModifyCommentDTO, user: User? = null): Comment? {
+    fun appendComment(parent: Comment, commentDTO: ModifyCommentDTO, user: User? = null): Comment {
         assert(user != null || commentDTO is ModifyCommentDTO.Anonymous)
         val authorInfo = createUserInfo(commentDTO, user)
         val comment = Comment(commentDTO.content, parent.postId, parent.id, authorInfo)

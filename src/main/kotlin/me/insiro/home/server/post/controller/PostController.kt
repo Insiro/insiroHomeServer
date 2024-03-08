@@ -29,8 +29,12 @@ class PostController(
 ) : IController {
 
     @GetMapping
-    fun getPosts(): ResponseEntity<List<PostResponseDTO>> {
-        val posts = postService.findJoinedPosts().map { PostResponseDTO(it) }
+    fun getPosts(
+        @RequestParam(required = false) offset: Long = 0,
+        @RequestParam(required = false) limit: Int? = null
+    ): ResponseEntity<List<PostResponseDTO>> {
+        val offsetLimit = limit?.let { OffsetLimit(offset, limit) }
+        val posts = postService.findJoinedPosts(offsetLimit).map { PostResponseDTO(it) }
         return ResponseEntity(posts, HttpStatus.OK)
     }
 
