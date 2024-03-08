@@ -20,7 +20,7 @@ class CommentRepository : AbsRepository<Long, Comments, Comment, Comment.Id> {
         return Comment(
             it[Comments.content],
             Post.Id(it[Comments.postId].value),
-            it[Comments.parentId]?.value?.let { id -> Comment.Id(id) },
+            it[Comments.parentId]?.let { id -> Comment.Id(id) },
             it[Comments.authorInfo],
             Comment.Id(it[Comments.id].value),
             it[Comments.createdAt]
