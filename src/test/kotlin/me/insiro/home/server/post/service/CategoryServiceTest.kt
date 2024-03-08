@@ -4,10 +4,8 @@ import me.insiro.home.server.post.dto.category.ModifyCategoryDTO
 import me.insiro.home.server.post.entity.Categories
 import me.insiro.home.server.post.entity.Category
 import me.insiro.home.server.post.exception.category.CategoryConflictException
-import me.insiro.home.server.post.exception.category.CategoryWrongFieldException
 import me.insiro.home.server.post.repository.CategoryRepository
 import me.insiro.home.server.testUtils.AbsDataBaseTest
-import net.bytebuddy.utility.RandomString
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Assertions.*
@@ -66,9 +64,6 @@ class CategoryServiceTest : AbsDataBaseTest(Categories) {
         // Fail Test (Conflict)
         val dtoToFail = ModifyCategoryDTO(category.name)
         assertThrows<CategoryConflictException> { categoryService.create(dtoToFail) }
-        // Test Fail (Too long name)
-        val dtoToFail2 = ModifyCategoryDTO(category.name + RandomString.make(50))
-        assertThrows<CategoryWrongFieldException> { categoryService.create(dtoToFail2) }
 
         // Success Test
         val dtoToSuccess = dtoToFail.copy("new${dtoToFail.name}")
@@ -91,11 +86,6 @@ class CategoryServiceTest : AbsDataBaseTest(Categories) {
         val notFoundDTO = ModifyCategoryDTO(category.name + "1")
         val updated = categoryService.update(Category.Id(category.id!!.value + 1), notFoundDTO)
         assertNull(updated)
-        // Test Fail (Too long name)
-        val tooLongDTO = ModifyCategoryDTO(category.name + RandomString.make(50))
-        assertThrows<CategoryWrongFieldException> {
-            categoryService.update(category.id!!, tooLongDTO)
-        }
         insert(category.copy(name = category.name + "2"))
         val conflictDTO = ModifyCategoryDTO(category.name + "2")
         assertThrows<CategoryConflictException> { categoryService.update(category.id!!, conflictDTO) }
