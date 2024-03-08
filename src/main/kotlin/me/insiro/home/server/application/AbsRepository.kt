@@ -1,7 +1,7 @@
 package me.insiro.home.server.application
 
-import me.insiro.home.server.application.domain.OffsetLimit
 import me.insiro.home.server.application.domain.IEntityVO
+import me.insiro.home.server.application.domain.OffsetLimit
 import org.jetbrains.exposed.dao.DaoEntityID
 import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.sql.*
@@ -20,7 +20,7 @@ interface AbsRepository<Id : Comparable<Id>, Table, VO, VoId> where   VO : IEnti
         ret
     }
 
-    fun find(limitOption: OffsetLimit?=null): List<VO> = transaction {
+    fun find(limitOption: OffsetLimit? = null): List<VO> = transaction {
         table.selectAll()
             .let { query -> limitOption?.let { query.limit(it.limit, it.offset) } ?: query }
             .map { relationObjectMapping(it) }
@@ -34,7 +34,10 @@ interface AbsRepository<Id : Comparable<Id>, Table, VO, VoId> where   VO : IEnti
 
     fun update(vo: VO): VO
 
-    private fun update(where: (SqlExpressionBuilder.() -> Op<Boolean>)? = null, body: Table.(UpdateStatement) -> Unit): Int =
+    private fun update(
+        where: (SqlExpressionBuilder.() -> Op<Boolean>)? = null,
+        body: Table.(UpdateStatement) -> Unit
+    ): Int =
         transaction {
             table.update(where, body = body)
         }

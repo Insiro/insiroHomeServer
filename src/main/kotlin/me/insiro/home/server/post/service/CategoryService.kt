@@ -17,9 +17,9 @@ class CategoryService(private val categoryRepository: CategoryRepository) {
     }
 
     fun delete(name: String): Category.Id? {
-        val categoryId = categoryRepository.findByName(name)?.id
-        categoryId?.let { categoryRepository.delete(it) }
-        return categoryId
+        val category = categoryRepository.findByName(name)
+        category?.let { categoryRepository.delete(category) }
+        return category?.id
     }
 
 

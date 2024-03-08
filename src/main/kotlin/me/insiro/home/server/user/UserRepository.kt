@@ -40,6 +40,7 @@ class UserRepository : AbsRepository<Long, Users, User, User.Id> {
             it[Users.email],
             it[Users.permission],
             id = User.Id(it[Users.id]),
+            it[Users.createdAt]
             )
         return user
     }

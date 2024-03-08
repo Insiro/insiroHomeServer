@@ -6,12 +6,12 @@ import me.insiro.home.server.post.entity.Category
 import me.insiro.home.server.post.exception.category.CategoryConflictException
 import me.insiro.home.server.post.exception.category.CategoryWrongFieldException
 import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import org.springframework.stereotype.Repository
+import java.time.LocalDateTime
 
 @Repository
 class CategoryRepository : AbsRepository<Int, Categories, Category, Category.Id> {
@@ -19,31 +19,31 @@ class CategoryRepository : AbsRepository<Int, Categories, Category, Category.Id>
     override fun relationObjectMapping(it: ResultRow): Category {
         return Category(
             it[Categories.name],
-            Category.Id(it[Categories.id].value)
+            Category.Id(it[Categories.id].value),
+            it[Categories.createdAt]
         )
     }
 
     override fun update(vo: Category): Category = transaction {
-        assert( vo.id !=null)
+        assert(vo.id != null)
         findByName(vo.name)?.let { throw CategoryConflictException(vo.name) }
         try {
-            Categories.update {
-                Categories.id eq vo.id!!.value
-                it[name] = vo.name
-            }
+            Categories.update({ Categories.id eq vo.id!!.value }) { it[name] = vo.name }
             vo
-
         } catch (e: IllegalArgumentException) {
             throw CategoryWrongFieldException(vo)
         }
-
     }
 
     override fun new(vo: Category): Category = transaction {
         findByName(vo.name)?.let { throw CategoryConflictException(vo.name) }
         try {
-            val id = Categories.insertAndGetId { it[name] = vo.name }
-            vo.copy(id = Category.Id(id))
+            val now = LocalDateTime.now()
+            val id = Categories.insertAndGetId {
+                it[name] = vo.name
+                it[createdAt] = now
+            }
+            vo.copy(id = Category.Id(id), createdAt = now)
         } catch (e: IllegalArgumentException) {
             throw CategoryWrongFieldException(vo)
         }
