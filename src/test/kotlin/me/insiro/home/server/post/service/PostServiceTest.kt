@@ -46,7 +46,6 @@ class PostServiceTest : AbsDataBaseTest(Users, Categories, Posts) {
     @Test
     fun updatePost() {
         val cate2 = DBInserter.insertCategory(Category("testCate2"))
-
         val updatePostDTO = UpdatePostDTO("newTitle", category = cate2.name)
         val updated = postService.updatePost(post.id!!, updatePostDTO, cate2.id, user)
         assertNotNull(updated)

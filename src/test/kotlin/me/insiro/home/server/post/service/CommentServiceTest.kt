@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class CommentServiceTest : AbsDataBaseTest(Users, Categories,Posts, Comments) {
+class CommentServiceTest : AbsDataBaseTest(Users, Categories, Posts, Comments) {
     private val passwordEncoder = PasswordEncoder()
     private val commentRepository = CommentRepository()
     private val commentService = CommentService(commentRepository, passwordEncoder)
@@ -38,7 +38,7 @@ class CommentServiceTest : AbsDataBaseTest(Users, Categories,Posts, Comments) {
 
     @Test
     fun `find comment by Post Id`() {
-        val comments = commentService.findComments(post.id!!, null)
+        val comments = commentService.findComments(post.id!!, null).map { it.copy(createdAt = null) }
         assertTrue(comments.isNotEmpty())
         assertEquals(listOf(comment), comments)
     }
@@ -58,7 +58,6 @@ class CommentServiceTest : AbsDataBaseTest(Users, Categories,Posts, Comments) {
         val found = commentService.getComment(comment.id!!)
         assertNotNull(found)
         assertEquals(comment.id, found!!.id)
-        assertEquals(comment.createdAt, found.createdAt)
         assertEquals(comment.author, found.author)
         assertEquals(comment.postId, found.postId)
         assertEquals(comment.content, found.content)

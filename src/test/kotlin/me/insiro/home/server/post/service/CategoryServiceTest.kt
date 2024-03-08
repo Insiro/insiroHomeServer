@@ -6,7 +6,7 @@ import me.insiro.home.server.post.entity.Category
 import me.insiro.home.server.post.exception.category.CategoryConflictException
 import me.insiro.home.server.post.repository.CategoryRepository
 import me.insiro.home.server.testUtils.AbsDataBaseTest
-import org.jetbrains.exposed.sql.insertAndGetId
+import me.insiro.home.server.testUtils.DBInserter
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -26,8 +26,7 @@ class CategoryServiceTest : AbsDataBaseTest(Categories) {
     }
 
     private fun insert(category: Category): Category = transaction {
-        val id = Categories.insertAndGetId { it[name] = category.name }.value
-        category.copy(id = Category.Id(id))
+        DBInserter.insertCategory(category)
     }
 
     @Test

@@ -147,10 +147,9 @@ class PostControllerTest : AbsControllerTest("/posts") {
     @Test
     fun `test add comment with signed user`() {
         val signedDTO = ModifyCommentDTO.Signed("content")
-        Mockito.`when`(postService.findPost(post.id!!)).thenReturn(post)
         Mockito.`when`(commentService.addComment(post.id!!, signedDTO, user)).thenReturn(comment)
         mockMvc.perform(
-            MockMvcRequestBuilders.post(uri(post.id!!, "comments", "signed"))
+            MockMvcRequestBuilders.post(uri(post.id!!, "comments"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(gson.toJson(signedDTO))
                 .with {
@@ -177,7 +176,6 @@ class PostControllerTest : AbsControllerTest("/posts") {
             createdAt = LocalDateTime.now(),
             id = Comment.Id(2)
         )
-        Mockito.`when`(postService.findPost(post.id!!)).thenReturn(post)
         Mockito.`when`(commentService.addComment(post.id!!, anonymousDTO)).thenReturn(anonymousComment)
         mockMvc.perform(
             MockMvcRequestBuilders.post(uri(post.id!!, "comments"))
