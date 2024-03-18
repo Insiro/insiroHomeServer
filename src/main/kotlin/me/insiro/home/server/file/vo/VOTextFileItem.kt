@@ -4,10 +4,9 @@ data class VOTextFileItem(
     override val domain: String,
     override val collection: String,
     override val name: String,
-    val content: String?,
-) : IFileItem
-{
-    constructor(collection: IFileCollection, fileName:String): this(
-        collection.domain, collection.collection, fileName,""
+    val content: String? = null,
+) : IFileItem {
+    constructor(collection: IFileCollection, fileName: String, content: String? = null) : this(
+        collection.domain, collection.collection, fileName, content
     )
 }
