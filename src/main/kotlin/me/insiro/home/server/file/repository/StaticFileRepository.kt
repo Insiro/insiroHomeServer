@@ -7,7 +7,7 @@ import java.nio.file.AccessDeniedException
 import java.nio.file.Path
 import kotlin.io.path.*
 
-class StaticFileRepository(override val location: String) : IFileRepository{
+class StaticFileRepository(override val location: String) : IFileRepository {
     private val path: Path = Path(location).toRealPath()
     private fun path(file: IFileCollection, mkdir: Boolean = false): Path {
         var filePath = path.resolve(file.domain).resolve(file.collection)
@@ -57,6 +57,11 @@ class StaticFileRepository(override val location: String) : IFileRepository{
         return FileItemFactory.new(fileVO, file)
     }
 
+    override fun get(fileVO: VOTextFileItem): VOTextFileItem? {
+        val file = path(fileVO).toFile()
+        return if (file.isFile.not()) null else fileVO
+    }
+
     override fun load(fileVO: VOTextFileItem): VOTextFileItem? {
         val filePath = path(fileVO)
         val file = filePath.toFile()
@@ -89,8 +94,29 @@ class StaticFileRepository(override val location: String) : IFileRepository{
         return textVO.copy(content = textVO.content + content)
     }
 
+    override fun delete(collection: VOFileCollection): Boolean {
+        val filePath = path(collection)
+        if (!filePath.isDirectory())
+            return false
+        return filePath.toFile().deleteRecursively()
+    }
+
     override fun delete(fileVO: IFileItem): Boolean {
+        if (fileVO.name == "index.md")
+            return delete(VOFileCollection(fileVO))
         val filePath = path(fileVO)
         return filePath.toFile().delete()
     }
+
+    override fun addItem(textVO: IFileCollection, data: MultipartFile): IFileItem? {
+        val filePath = path(textVO)
+        if (filePath.parent.notExists())
+            return null
+        val fineName = data.originalFilename?:return null
+        val fileVO = FileItemFactory.new(textVO,  fineName)
+
+        data.transferTo(path(fileVO).toFile())
+        return fileVO
+    }
+
 }

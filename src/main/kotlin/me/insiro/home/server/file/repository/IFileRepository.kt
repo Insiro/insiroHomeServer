@@ -13,7 +13,7 @@ interface  IFileRepository {
     fun find(collection: IFileCollection): List<IFileItem>
 
     fun get(fileVO: IFileItem): IFileItem?
-
+    fun get(fileVO:VOTextFileItem):VOTextFileItem?
     //by item
     fun load(fileVO: VOTextFileItem): VOTextFileItem?
     fun save(fileVO: IFileItem, data:Any): IFileItem {
@@ -26,6 +26,8 @@ interface  IFileRepository {
     fun save(textVO: VOTextFileItem):VOTextFileItem{return save(textVO, textVO.content?:"")}
     fun save(contentVO: IFileItem, data: MultipartFile):IFileItem
     fun save(textVO: VOTextFileItem, data: String):VOTextFileItem
+    fun delete(collection: VOFileCollection):Boolean
     fun delete(fileVO: IFileItem): Boolean
     fun append(textVO: VOTextFileItem, content: String): VOTextFileItem?
+    fun addItem(textVO: IFileCollection,data: MultipartFile ):IFileItem?
 }
