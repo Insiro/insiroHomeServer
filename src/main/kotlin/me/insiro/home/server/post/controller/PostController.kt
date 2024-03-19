@@ -2,6 +2,7 @@ package me.insiro.home.server.post.controller
 
 import me.insiro.home.server.application.IController
 import me.insiro.home.server.application.domain.OffsetLimit
+import me.insiro.home.server.file.service.PostFileService
 import me.insiro.home.server.post.dto.category.CategoryDTO
 import me.insiro.home.server.post.dto.comment.CommentDTO
 import me.insiro.home.server.post.dto.comment.ModifyCommentDTO
@@ -19,12 +20,14 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.annotation.Secured
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 
 @RestController
 @RequestMapping("posts")
 class PostController(
     private val postService: PostService,
     private val categoryService: CategoryService,
+    private val fileService: PostFileService,
     val commentService: CommentService,
 ) : IController {
 
@@ -41,13 +44,17 @@ class PostController(
     @Secured("ROLE_WRITER")
     @PostMapping
     fun createPost(
-        @RequestBody newPostDTO: NewPostDTO,
+        @RequestPart("value") newPostDTO: NewPostDTO,
+        @RequestParam("files") files: List<MultipartFile>?,
     ): ResponseEntity<PostResponseDTO> {
         val category = newPostDTO.category?.let {
             categoryService.findByName(it) ?: throw CategoryNotFoundException(it)
         }
         val user = getSignedUser()!!
         val post = postService.createPost(newPostDTO, user, category?.id)
+
+        fileService.create(post, newPostDTO.content, files)
+
         return ResponseEntity(
             PostResponseDTO(post, SimpleUserDTO(user), category?.let { CategoryDTO(it) }),
             HttpStatus.CREATED
@@ -73,7 +80,8 @@ class PostController(
     @PatchMapping("{id}")
     fun updatePost(
         @PathVariable id: Post.Id,
-        @RequestBody updateDTO: UpdatePostDTO,
+        @RequestPart("value") updateDTO: UpdatePostDTO,
+        @RequestParam("files") files: List<MultipartFile>?
     ): ResponseEntity<PostResponseDTO> {
 
         val category =
@@ -81,6 +89,7 @@ class PostController(
         val user = getSignedUser()!!
         val post =
             postService.updatePost(id, updateDTO, category?.id, user) ?: throw PostNotFoundException(id)
+        fileService.update(post, updateDTO, files)
         return ResponseEntity(
             PostResponseDTO(post, SimpleUserDTO(user), category?.let { CategoryDTO(it) }),
             HttpStatus.OK
@@ -91,7 +100,9 @@ class PostController(
     fun deletePost(
         @PathVariable id: Post.Id,
     ): ResponseEntity<Boolean> {
+        val post = postService.findPost(id)?:throw PostNotFoundException(id)
         val result = postService.deletePost(id, getSignedUser()!!)
+        fileService.delete(post)
         return ResponseEntity(result, HttpStatus.OK)
     }
 
@@ -109,7 +120,8 @@ class PostController(
     @PostMapping("{id}/comments")
     fun addComment(
         @PathVariable id: Post.Id,
-        @RequestBody newCommentDTO: ModifyCommentDTO
+        @RequestPart("value") newCommentDTO: ModifyCommentDTO,
+        @RequestParam("files") files: List<MultipartFile>?,
     ): ResponseEntity<CommentDTO> {
         val user = getSignedUser()
         postService.findPost(id) ?: throw PostNotFoundException(id)

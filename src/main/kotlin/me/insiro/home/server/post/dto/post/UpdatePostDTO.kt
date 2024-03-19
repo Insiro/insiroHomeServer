@@ -8,4 +8,5 @@ data class UpdatePostDTO(
     val category: String? = null,
     val status: Status? = null,
     val content: String? = null,
+    val deletedItems: List<String>? = null,
 )

@@ -1,6 +1,7 @@
 package me.insiro.home.server.post.controller
 
 import me.insiro.home.server.application.domain.Status
+import me.insiro.home.server.file.service.PostFileService
 import me.insiro.home.server.post.dto.comment.ModifyCommentDTO
 import me.insiro.home.server.post.dto.post.NewPostDTO
 import me.insiro.home.server.post.dto.post.UpdatePostDTO
@@ -36,6 +37,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
     private val postService = mock(PostService::class.java)
     private val categoryService = mock(CategoryService::class.java)
     private val commentService = mock(CommentService::class.java)
+    private val postFileService = mock(PostFileService::class.java)
     private val user = User("testUser", "", "testEmail", 0b1, id = User.Id(1), LocalDateTime.now())
     private val category = Category("Default", Category.Id(0), LocalDateTime.now())
     private val comment =
@@ -50,7 +52,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
 
     @BeforeEach
     override fun init() {
-        val controller = PostController(postService, categoryService, commentService)
+        val controller = PostController(postService, categoryService, postFileService, commentService)
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build()
     }
 
