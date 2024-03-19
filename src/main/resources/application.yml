@@ -13,5 +13,9 @@ server:
     include-stacktrace: never
 app:
   files:
-    storage: local
-    location: B:\temp
+    storage: ${files.storage}
+    location: ${files.location}
+  admin:
+    name: ${admin.name}
+    password: ${admin.password}
+    email: ${admin.email}
