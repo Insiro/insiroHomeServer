@@ -1,23 +1,22 @@
 package me.insiro.home.server.post.entity
 
 import kotlinx.serialization.Serializable
-import me.insiro.home.server.application.domain.BaseIDTable
 import me.insiro.home.server.application.domain.IBaseEntityVO
 import me.insiro.home.server.application.domain.Status
+import me.insiro.home.server.application.domain.TitledTable
+import me.insiro.home.server.application.domain.TitledVO
 import me.insiro.home.server.user.entity.User
 import me.insiro.home.server.user.entity.Users
 import org.jetbrains.exposed.dao.id.EntityID
 import java.time.LocalDateTime
 
-object Posts : BaseIDTable() {
-    val title = varchar("title", 100)
+object Posts : TitledTable() {
     val status = enumeration<Status>("status")
     val authorId = reference("authorId", Users.id)
     val categoryId = reference("category", Categories.id).nullable()
 }
 
-sealed interface Post : IBaseEntityVO {
-    var title: String
+sealed interface Post : TitledVO {
     var status: Status
     override val id:Id?
 
@@ -47,7 +46,6 @@ sealed interface Post : IBaseEntityVO {
     ) : Post {
         data class AuthorInfo(val id: User.Id, val name: String)
     }
-
 
 }
 
