@@ -1,12 +1,14 @@
 package me.insiro.home.server.project.dto.project
 
+import me.insiro.home.server.application.domain.IModifyFileDTO
 import me.insiro.home.server.application.domain.Status
 
 
 data class UpdateProjectDTO(
-        val title: String?,
+        override val title: String?,
         val status: Status?,
-        val content: String?,
+        override val content: String?,
         val languages: List<String>?,
         val type: List<String>?,
-)
+        override val deletedFileNames: List<String>?
+):IModifyFileDTO

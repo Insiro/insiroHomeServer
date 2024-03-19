@@ -1,4 +1,7 @@
 package me.insiro.home.server.application.domain
 
-interface IUpdateDTO {
+interface IModifyFileDTO {
+    val title: String?
+    val content:String?
+    val deletedFileNames: List<String>?
 }
