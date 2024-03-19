@@ -26,13 +26,12 @@ class UserServiceTest : AbsDataBaseTest(Users) {
     private val userRepository = UserRepository()
     private val passwordEncoder: PasswordEncoder = BCryptPasswordEncoder()
     private val userService = UserService(userRepository, passwordEncoder)
-    private val userPwd= "testPwd"
     private lateinit var user: User
 
     @BeforeEach
     fun init() {
         resetDataBase()
-        user = DBInserter.insertUser(User("testName", passwordEncoder.encode(userPwd), "test@example.com", 0b1))
+        user = DBInserter.insertUser(User("testName", passwordEncoder.encode("testPwd"), "test@example.com", 0b1))
     }
 
     @Test
@@ -110,8 +109,7 @@ class UserServiceTest : AbsDataBaseTest(Users) {
     fun loadUserByUsername() {
         val details = userService.loadUserByUsername(user.name)
         assertNotNull(details)
-        details!!
-        assertEquals(user.name, details.username)
+        assertEquals(user.name, details!!.username)
         assertEquals(user.hashedPassword, details.password)
 
         assertEquals(user.name, details.user.name)
