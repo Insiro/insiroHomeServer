@@ -3,6 +3,7 @@ package me.insiro.home.server.post.entity
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import me.insiro.home.server.application.domain.BaseIDTable
+import me.insiro.home.server.application.domain.IBaseEntityID
 import me.insiro.home.server.application.domain.IBaseEntityVO
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.json.json
@@ -26,7 +27,7 @@ data class Comment(
 ) : IBaseEntityVO {
     @JvmInline
     @Serializable
-    value class Id(override val value: Long) : IBaseEntityVO.Id {
+    value class Id(override val value: Long) : IBaseEntityID {
         constructor(entityID: EntityID<Long>) : this(entityID.value)
     }
 }

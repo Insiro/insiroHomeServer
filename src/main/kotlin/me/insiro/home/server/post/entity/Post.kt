@@ -1,7 +1,7 @@
 package me.insiro.home.server.post.entity
 
 import kotlinx.serialization.Serializable
-import me.insiro.home.server.application.domain.IBaseEntityVO
+import me.insiro.home.server.application.domain.IBaseEntityID
 import me.insiro.home.server.application.domain.Status
 import me.insiro.home.server.application.domain.TitledTable
 import me.insiro.home.server.application.domain.TitledVO
@@ -22,7 +22,7 @@ sealed interface Post : TitledVO {
 
     @JvmInline
     @Serializable
-    value class Id(override val value: Long) : IBaseEntityVO.Id {
+    value class Id(override val value: Long) : IBaseEntityID {
         constructor(entityID: EntityID<Long>) : this(entityID.value)
     }
 

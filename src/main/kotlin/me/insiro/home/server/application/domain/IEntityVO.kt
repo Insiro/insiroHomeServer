@@ -11,7 +11,3 @@ interface IEntityVO<ID : Comparable<ID>> {
         val value: ID
     }
 }
-
-interface IBaseEntityVO : IEntityVO<Long> {
-    interface Id : IEntityVO.Id<Long>
-}

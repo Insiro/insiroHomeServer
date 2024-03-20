@@ -1,8 +1,9 @@
 package me.insiro.home.server.user.entity
 
 import kotlinx.serialization.Serializable
-import me.insiro.home.server.application.domain.IBaseEntityVO
 import me.insiro.home.server.application.domain.BaseIDTable
+import me.insiro.home.server.application.domain.IBaseEntityID
+import me.insiro.home.server.application.domain.IBaseEntityVO
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.Column
 import java.time.LocalDateTime
@@ -26,7 +27,7 @@ data class User(
 ) : IBaseEntityVO {
     @JvmInline
     @Serializable
-    value class Id(override val value: Long) : IBaseEntityVO.Id {
+    value class Id(override val value: Long) : IBaseEntityID {
         constructor(entityID: EntityID<Long>) : this(entityID.value)
     }
 }

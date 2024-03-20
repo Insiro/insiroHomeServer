@@ -8,3 +8,6 @@ import java.time.LocalDateTime
 abstract class BaseIDTable : LongIdTable() {
     val createdAt: Column<LocalDateTime> = datetime("createdAt").clientDefault { LocalDateTime.now() }
 }
+typealias IBaseEntityVO = IEntityVO<Long>
+
+typealias IBaseEntityID =  IEntityVO.Id<Long>
