@@ -20,19 +20,19 @@ object ProjectTypeRelations : Table() {
 }
 
 sealed interface Project : TitledVO {
-    val status: String
+    val status: Status
 
     data class Raw(
-        override val id: Id? = null,
         override var title: String,
-        override var status: String,
+        override var status: Status,
+        override val id: Id? = null,
         override val createdAt: LocalDateTime? = null,
     ) : Project
 
     data class Joined(
-        override val id: Id? = null,
         override var title: String,
-        override var status: String,
+        override var status: Status,
+        override val id: Id? = null,
         val types: List<ProjectType>? = null,
         override val createdAt: LocalDateTime? = null,
     ) : Project
