@@ -1,6 +1,6 @@
 package me.insiro.home.server.project.dto.project
 
-import jdk.jshell.Snippet.Status
+import me.insiro.home.server.application.domain.Status
 
 data class NewProjectDTO(
         val title: String,

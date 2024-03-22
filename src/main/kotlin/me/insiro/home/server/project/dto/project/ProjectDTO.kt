@@ -1,11 +1,19 @@
 package me.insiro.home.server.project.dto.project
 
-import jdk.jshell.Snippet.Status
+import me.insiro.home.server.application.domain.Status
+import me.insiro.home.server.project.entity.Project
+import me.insiro.home.server.project.entity.ProjectType
 
 data class ProjectDTO(
-        val id: Long,
-        val status: Status,
-        val filename: String,
-        val languages: List<String>,
-        val type: List<String>,
-)
+    val id: Long,
+    val status: Status,
+    var type: List<ProjectType>? = null,
+) {
+    constructor(project: Project) : this(
+        project.id!!.value, project.status,
+        when (project) {
+            is Project.Joined -> project.types
+            is Project.Raw -> null
+        }
+    )
+}
