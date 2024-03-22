@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.javatime.datetime
 import java.time.LocalDateTime
 
 object ProjectTypes : IntIdTable() {
-    val name = varchar("name", 100)
+    val name = varchar("name", 100) .uniqueIndex()
     val createdAt: Column<LocalDateTime> = datetime("createdAt").clientDefault { LocalDateTime.now() }
 }
 
