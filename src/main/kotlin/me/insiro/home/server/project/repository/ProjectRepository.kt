@@ -2,8 +2,10 @@ package me.insiro.home.server.project.repository
 
 
 import me.insiro.home.server.application.AbsRepository
+import me.insiro.home.server.application.domain.Status
 import me.insiro.home.server.project.entity.Project
 import me.insiro.home.server.project.entity.Projects
+import me.insiro.home.server.project.exception.ProjectNotFoundException
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -26,7 +28,13 @@ class ProjectRepository : AbsRepository<Long, Projects, Project, Project.Id> {
         }
         vo as Project.Raw
     }
-
+    fun update(id:Project.Id,title:String?=null, status:Status?=null ):Project = transaction{
+        Projects.update(where = { Projects.id eq id.value }) {
+            title?.let { title-> it[Projects.title] = title }
+            status?.let{status-> it[Projects.status] = status}
+        }
+        findById(id) ?:throw ProjectNotFoundException(id)
+    }
     override fun new(vo: Project): Project.Raw = transaction {
         val now = LocalDateTime.now()
         val id = Projects.insertAndGetId {
