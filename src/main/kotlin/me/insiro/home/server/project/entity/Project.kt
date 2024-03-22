@@ -21,6 +21,12 @@ object ProjectTypeRelations : Table() {
 
 sealed interface Project : TitledVO {
     val status: Status
+    override val id: Id?
+
+    @JvmInline
+    value class Id(override val value: Long) : IBaseEntityID {
+        constructor(entityID: EntityID<Long>) : this(entityID.value)
+    }
 
     data class Raw(
         override var title: String,
@@ -35,11 +41,15 @@ sealed interface Project : TitledVO {
         override val id: Id? = null,
         val types: List<ProjectType>? = null,
         override val createdAt: LocalDateTime? = null,
-    ) : Project
+    ) : Project {
 
-    @JvmInline
-    value class Id(override val value: Long) : IBaseEntityID {
-        constructor(entityID: EntityID<Long>) : this(entityID.value)
+        constructor(project: Project, types: List<ProjectType>? = null) : this(
+            project.title,
+            project.status,
+            Id(project.id!!.value),
+            types,
+            project.createdAt
+        )
     }
 }
 
