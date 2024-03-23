@@ -15,7 +15,7 @@ object ProjectTypes : IntIdTable() {
 
 data class ProjectType(
     var name: String,
-    override val id: IEntityVO.Id<Int>?,
+    override val id: IEntityVO.Id<Int>?=null,
     override val createdAt: LocalDateTime? = null,
 ) : IEntityVO<Int> {
     @JvmInline

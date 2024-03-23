@@ -30,14 +30,14 @@ sealed interface Project : TitledVO {
 
     data class Raw(
         override var title: String,
-        override var status: Status,
+        override var status: Status = Status.PUBLISHED,
         override val id: Id? = null,
         override val createdAt: LocalDateTime? = null,
     ) : Project
 
     data class Joined(
         override var title: String,
-        override var status: Status,
+        override var status: Status = Status.PUBLISHED,
         override val id: Id? = null,
         val types: List<ProjectType>? = null,
         override val createdAt: LocalDateTime? = null,
@@ -50,6 +50,7 @@ sealed interface Project : TitledVO {
             types,
             project.createdAt
         )
+
     }
 }
 
