@@ -1,8 +1,10 @@
 package me.insiro.home.server.testUtils
 
 import me.insiro.home.server.post.entity.*
+import me.insiro.home.server.project.entity.*
 import me.insiro.home.server.user.entity.User
 import me.insiro.home.server.user.entity.Users
+import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.LocalDateTime
@@ -44,5 +46,25 @@ object DBInserter {
             it[authorId] = post.authorId.value
         }
         post.copy(id = Post.Id(id))
+    }
+
+    fun insertProject(project: Project.Raw): Project.Raw = transaction {
+        val id = Projects.insertAndGetId {
+            it[status] = project.status
+            it[title] = project.title
+        }
+        project.copy(id = Project.Id(id))
+    }
+
+    fun insertProjectType(projectType: ProjectType): ProjectType = transaction {
+        val id = ProjectTypes.insertAndGetId { it[name] = projectType.name }
+        projectType.copy(id = ProjectType.Id(id))
+    }
+
+    fun insertProjectTypeRelation(project: Project, projectType: ProjectType) = transaction {
+        ProjectTypeRelations.insert {
+            it[projectId] = project.id!!.value
+            it[typeId] = projectType.id!!.value
+        }
     }
 }

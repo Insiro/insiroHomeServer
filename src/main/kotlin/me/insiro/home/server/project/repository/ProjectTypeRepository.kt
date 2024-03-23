@@ -1,7 +1,10 @@
 package me.insiro.home.server.project.repository
 
 import me.insiro.home.server.application.AbsRepository
-import me.insiro.home.server.project.entity.*
+import me.insiro.home.server.project.entity.Project
+import me.insiro.home.server.project.entity.ProjectType
+import me.insiro.home.server.project.entity.ProjectTypeRelations
+import me.insiro.home.server.project.entity.ProjectTypes
 import me.insiro.home.server.project.exception.ProjectTypeNotFoundException
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -42,13 +45,9 @@ class ProjectTypeRepository : AbsRepository<Int, ProjectTypes, ProjectType, Proj
 
     fun find(projectId: Project.Id): List<ProjectType> = transaction {
         ProjectTypeRelations
-            .join(
-                Projects,
-                JoinType.LEFT,
-                onColumn = ProjectTypeRelations.projectId,
-                otherColumn = Projects.id
-            )
+            .join(ProjectTypes, JoinType.LEFT, onColumn = ProjectTypeRelations.typeId, otherColumn = ProjectTypes.id)
             .select(ProjectTypes.fields)
+            .where { ProjectTypeRelations.projectId eq projectId.value }
             .map { relationObjectMapping(it) }
     }
 
