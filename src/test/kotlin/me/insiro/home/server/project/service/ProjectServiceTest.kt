@@ -44,7 +44,7 @@ class ProjectServiceTest : AbsDataBaseTest(Projects, ProjectTypes, ProjectTypeRe
         assertNotNull(result)
         assertEquals(dto.title, result!!.title)
         assertEquals(dto.status, result.status)
-        assertEquals(dto.types.sorted(), result.types?.map{it.name}?.sorted())
+        assertEquals(dto.types?.sorted(), result.types?.map{it.name}?.sorted())
         assertNotNull(result.createdAt)
         assertNotNull(result.id)
     }

@@ -22,7 +22,7 @@ class ProjectService(val projectRepository: ProjectRepository, val typeRepositor
 
     fun create(dto: NewProjectDTO): Project {
         val project = projectRepository.new(Project.Raw(dto.title, dto.status ?: Status.PUBLISHED))
-        return Project.Joined(project, updateRelation(dto.types, project.id!!))
+        return Project.Joined(project, dto.types?.let{updateRelation(dto.types, project.id!!)})
     }
 
     fun update(id: Project.Id, dto: UpdateProjectDTO): Project.Joined {
