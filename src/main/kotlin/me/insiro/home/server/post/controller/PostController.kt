@@ -80,7 +80,7 @@ class PostController(
     @PatchMapping("{id}")
     fun updatePost(
         @PathVariable id: Post.Id,
-        @RequestPart("value") updateDTO: UpdatePostDTO,
+        @RequestPart("data") updateDTO: UpdatePostDTO,
         @RequestParam("files") files: List<MultipartFile>?
     ): ResponseEntity<PostResponseDTO> {
 
