@@ -22,17 +22,17 @@ class ProjectService(val projectRepository: ProjectRepository, val typeRepositor
 
     fun create(dto: NewProjectDTO): Project {
         val project = projectRepository.new(Project.Raw(dto.title, dto.status ?: Status.PUBLISHED))
-        return Project.Joined(project, dto.types?.let{updateRelation(dto.types, project.id!!)})
+        return Project.Joined(project, dto.types?.let { updateRelation(dto.types, project.id!!) })
     }
 
     fun update(id: Project.Id, dto: UpdateProjectDTO): Project.Joined {
         val project = projectRepository.update(id, dto.title, dto.status)
-        val types = dto.types?.let { updateRelation(it, project.id!!) }?: typeRepository.find(id)
+        val types = dto.types?.let { updateRelation(it, project.id!!) } ?: typeRepository.find(id)
         return Project.Joined(project, types)
     }
 
-    fun find(offsetLimit: OffsetLimit?=null): List<Project> {
-        return projectRepository.find(offsetLimit)
+    fun find(filterOption: List<Status>? = null, offsetLimit: OffsetLimit? = null): List<Project> {
+        return projectRepository.find(filterOption, offsetLimit)
     }
 
     fun get(id: Project.Id): Result<Project.Joined> {

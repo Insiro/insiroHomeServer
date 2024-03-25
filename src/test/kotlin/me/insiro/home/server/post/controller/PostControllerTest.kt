@@ -60,7 +60,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
 
     @Test
     fun testGetPosts() {
-        Mockito.`when`(postService.findJoinedPosts()).thenReturn(listOf())
+        Mockito.`when`(postService.findJoinedPosts(null, arrayListOf(Status.PUBLISHED),null)).thenReturn(listOf())
         mockMvc.perform(MockMvcRequestBuilders.get(uri))
             .andExpect { status().isOk }
             .andExpect { jsonPath("$").isArray }
@@ -109,7 +109,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
 
         mockMvc.perform(
             MockMvcRequestBuilders
-                .multipart(HttpMethod.PATCH, uri)
+                .multipart(HttpMethod.PATCH, uri(post.id!!))
                 .part(dtoPart)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .apply {

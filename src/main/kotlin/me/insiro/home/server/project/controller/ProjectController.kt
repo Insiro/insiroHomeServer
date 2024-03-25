@@ -1,7 +1,8 @@
-package me.insiro.home.server.project
+package me.insiro.home.server.project.controller
 
 import me.insiro.home.server.application.IController
 import me.insiro.home.server.application.domain.OffsetLimit
+import me.insiro.home.server.application.domain.Status
 import me.insiro.home.server.file.service.ProjectFileService
 import me.insiro.home.server.project.dto.project.NewProjectDTO
 import me.insiro.home.server.project.dto.project.ProjectDTO
@@ -24,11 +25,11 @@ class ProjectController(
     @GetMapping
     fun getProjects(
         @RequestParam(required = false) offset: Long = 0,
-        @RequestParam(required = false) limit: Int? = null
-
+        @RequestParam(required = false) limit: Int? = null,
+        @RequestParam(required = false) status:List<Status> = listOf(Status.PUBLISHED),
     ): ResponseEntity<List<ProjectDTO>> {
         val offsetLimit = limit?.let { OffsetLimit(offset, limit) }
-        val projects = projectService.find(offsetLimit).map(::ProjectDTO)
+        val projects = projectService.find(filterOption = status, offsetLimit = offsetLimit).map(::ProjectDTO)
         return ResponseEntity(projects, HttpStatus.OK)
     }
 

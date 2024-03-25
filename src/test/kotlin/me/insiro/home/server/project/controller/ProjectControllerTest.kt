@@ -1,4 +1,4 @@
-package me.insiro.home.server.project
+package me.insiro.home.server.project.controller
 
 import me.insiro.home.server.file.service.ProjectFileService
 import me.insiro.home.server.project.dto.project.NewProjectDTO
