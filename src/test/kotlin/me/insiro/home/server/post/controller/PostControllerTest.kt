@@ -22,7 +22,9 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.junit.jupiter.MockitoExtension
+import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
+import org.springframework.mock.web.MockPart
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
@@ -58,7 +60,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
 
     @Test
     fun testGetPosts() {
-        Mockito.`when`(postService.findJoinedPosts()).thenReturn(listOf())
+        Mockito.`when`(postService.findJoinedPosts(null, arrayListOf(Status.PUBLISHED),null)).thenReturn(listOf())
         mockMvc.perform(MockMvcRequestBuilders.get(uri))
             .andExpect { status().isOk }
             .andExpect { jsonPath("$").isArray }
@@ -68,7 +70,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
     fun testGetPostById() {
         Mockito.`when`(postService.findJoinedPost(post.id!!)).thenReturn(joinedPost)
         Mockito.`when`(categoryService.findById(category.id!!)).thenReturn(category)
-        Mockito.`when`(commentService.findComments(post.id!!,null)).thenReturn(listOf(comment))
+        Mockito.`when`(commentService.findComments(post.id!!, null)).thenReturn(listOf(comment))
         mockMvc.perform(MockMvcRequestBuilders.get(uri(post.id!!)).queryParam("comment", "true"))
             .andExpect { status().isOk }
             .andExpect { jsonPath("$.status").value(post.status) }
@@ -84,13 +86,13 @@ class PostControllerTest : AbsControllerTest("/posts") {
 
     @Test
     fun testDeletePostById() {
-        Mockito.`when`(postService.deletePost(post.id!!, user)).thenReturn(true)
+        Mockito.`when`(postService.findPost(post.id!!)).thenReturn(post)
+        Mockito.`when`(postService.deletePost(post.id!!, detail.user)).thenReturn(true)
         Mockito.`when`(commentService.deleteCommentByPostId(post.id!!)).thenReturn(1)
         mockMvc.perform(MockMvcRequestBuilders.delete(uri(post.id!!))
-            .with {
-                val authentication = UsernamePasswordAuthenticationToken(detail, "", detail.authorities)
-                SecurityContextHolder.getContext().authentication = authentication
-                it
+            .apply {
+                SecurityContextHolder.getContext().authentication =
+                    UsernamePasswordAuthenticationToken(detail, "", detail.authorities)
             })
             .andExpect { status().isOk }
     }
@@ -100,21 +102,21 @@ class PostControllerTest : AbsControllerTest("/posts") {
         val cate2 = Category("cate2", Category.Id(2), createdAt = LocalDateTime.now())
         val updated = post.copy(categoryId = cate2.id, status = Status.HIDDEN)
         val updateDTO = UpdatePostDTO(category = cate2.name, status = updated.status)
-
+        val dtoPart = MockPart("data", gson.toJson(updateDTO).toByteArray())
+        dtoPart.headers.contentType = MediaType.APPLICATION_JSON
         Mockito.`when`(postService.updatePost(post.id!!, updateDTO, cate2.id, user)).thenReturn(updated)
         Mockito.`when`(categoryService.findByName(cate2.name)).thenReturn(cate2)
 
         mockMvc.perform(
-            MockMvcRequestBuilders.patch(uri(post.id!!))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(gson.toJson(updateDTO))
-                .with {
-                    val authentication = UsernamePasswordAuthenticationToken(detail, "", detail.authorities)
-                    SecurityContextHolder.getContext().authentication = authentication
-                    it
+            MockMvcRequestBuilders
+                .multipart(HttpMethod.PATCH, uri(post.id!!))
+                .part(dtoPart)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .apply {
+                    SecurityContextHolder.getContext().authentication =
+                        UsernamePasswordAuthenticationToken(detail, "", detail.authorities)
                 }
-        )
-            .andExpect { status().isOk }
+        ).andExpect { status().isOk }
             .andExpect { jsonPath("$.status").value(updated.status) }
             .andExpect { jsonPath("$.category").value(cate2) }
             .andExpect { jsonPath("$.title").value(updated.title) }
@@ -127,15 +129,16 @@ class PostControllerTest : AbsControllerTest("/posts") {
         val createDTO = NewPostDTO(post.title, category.name, "New Post Content")
         Mockito.`when`(categoryService.findByName(category.name)).thenReturn(category)
         Mockito.`when`(postService.createPost(createDTO, user, category.id)).thenReturn(post)
-
+        val dtoPart = MockPart("data", gson.toJson(createDTO).toByteArray())
+        dtoPart.headers.contentType = MediaType.APPLICATION_JSON
         mockMvc.perform(
-            MockMvcRequestBuilders.post(uri)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(gson.toJson(createDTO))
-                .with {
-                    val authentication = UsernamePasswordAuthenticationToken(detail, "", detail.authorities)
-                    SecurityContextHolder.getContext().authentication = authentication
-                    it
+            MockMvcRequestBuilders
+                .multipart(uri)
+                .part(dtoPart)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .apply {
+                    SecurityContextHolder.getContext().authentication =
+                        UsernamePasswordAuthenticationToken(detail, "", detail.authorities)
                 }
         )
             .andExpect { status().isOk }
@@ -190,7 +193,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
 
     @Test
     fun testGetComments() {
-        Mockito.`when`(commentService.findComments(post.id!!,null)).thenReturn(listOf(comment))
+        Mockito.`when`(commentService.findComments(post.id!!, null)).thenReturn(listOf(comment))
 
         mockMvc.perform(MockMvcRequestBuilders.get(uri(post.id!!, "comments")).contentType(MediaType.APPLICATION_JSON))
             .andExpect { status().isOk }

@@ -8,7 +8,6 @@ data class UpdateProjectDTO(
         override val title: String?,
         val status: Status?,
         override val content: String?,
-        val languages: List<String>?,
-        val type: List<String>?,
+        val types: List<String>?,
         override val deletedFileNames: List<String>?
 ):IModifyFileDTO

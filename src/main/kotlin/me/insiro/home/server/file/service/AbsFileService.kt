@@ -1,4 +1,3 @@
-
 import me.insiro.home.server.application.domain.IModifyFileDTO
 import me.insiro.home.server.application.domain.TitledVO
 import me.insiro.home.server.file.repository.IFileRepository
@@ -13,10 +12,11 @@ abstract class AbsFileService<VO : TitledVO>(
     protected val repository: IFileRepository
 ) {
 
-    private fun collectionName(vo: VO): String{
+    private fun collectionName(vo: VO): String {
         assert(vo.id != null)
-        return "${vo.id}.${vo.title}"
+        return "${vo.id}"
     }
+
     fun create(
         vo: VO,
         content: String,
@@ -38,10 +38,12 @@ abstract class AbsFileService<VO : TitledVO>(
     protected fun get(collection: String, item: String): IFileItem? {
         return repository.get(VOFileItem(domain, collection, item))
     }
+
     fun get(vo: VO, load: Boolean): VOTextFileItem? {
         assert(vo.id != null)
         return get(collectionName(vo), load)
     }
+
     fun get(vo: VO, item: String): IFileItem? {
         assert(vo.id != null)
         return get(collectionName(vo), item)
@@ -61,7 +63,7 @@ abstract class AbsFileService<VO : TitledVO>(
         return repository.find(VOFileCollection(domain, collection))
     }
 
-    fun find(vo:VO): List<IFileItem> {
+    fun find(vo: VO): List<IFileItem> {
         assert(vo.id != null)
         return find(collectionName(vo))
     }

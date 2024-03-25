@@ -9,12 +9,9 @@ import me.insiro.home.server.post.entity.Post
 import me.insiro.home.server.post.entity.Posts
 import me.insiro.home.server.user.entity.User
 import me.insiro.home.server.user.entity.Users
-import org.jetbrains.exposed.sql.JoinType
-import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.update
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
 
@@ -93,15 +90,30 @@ class PostRepository : AbsRepository<Long, Posts, Post.Raw, Post.Id> {
         vo
     }
 
-    fun findJoining(categoryId: Category.Id? = null, offsetLimit: OffsetLimit? = null): List<Post.Joined> =
+    fun find(
+        categoryId: Category.Id? = null,
+        status: List<Status>? = null,
+        offsetLimit: OffsetLimit? = null
+    ): List<Post.Raw> = transaction {
+        val query = Posts.selectAll()
+        offsetLimit?.let { query.limit(it.limit, it.offset) }
+        categoryId?.let { query.adjustWhere { Posts.categoryId eq categoryId.value } }
+        status?.let { status.forEach { query.adjustWhere { Posts.status eq it } } }
+        query.map { relationObjectMapping(it) }
+    }
+
+    fun findJoining(
+        categoryId: Category.Id? = null,
+        status: List<Status>? = null,
+        offsetLimit: OffsetLimit? = null
+    ): List<Post.Joined> =
         transaction {
             val query = Posts.join(Users, JoinType.LEFT, onColumn = Posts.authorId, otherColumn = Users.id)
                 .join(Categories, JoinType.LEFT, onColumn = Posts.categoryId, otherColumn = Categories.id)
                 .select(Posts.columns + Users.name + Categories.name)
-                .apply { offsetLimit?.let { this.limit(it.limit, it.offset) } }
-            categoryId?.let {
-                query.adjustWhere { Posts.categoryId eq categoryId.value }
-            }
+            offsetLimit?.let { query.limit(it.limit, it.offset) }
+            categoryId?.let { query.adjustWhere { Posts.categoryId eq categoryId.value } }
+            status?.let { status.forEach { query.adjustWhere { Posts.status eq it } } }
             query.map { joinedRelationObjectMapping(it) }
         }
 

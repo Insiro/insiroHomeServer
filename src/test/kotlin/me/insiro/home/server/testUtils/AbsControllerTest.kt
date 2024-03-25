@@ -9,7 +9,9 @@ import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.test.web.servlet.MockMvc
 
 @ExtendWith(MockitoExtension::class)
-abstract class AbsControllerTest(private val baseUrl: String) {
+abstract class AbsControllerTest(baseUrl: String) {
+    private val baseUrl: String = if (baseUrl.startsWith("/")) baseUrl else "/$baseUrl"
+
     protected lateinit var mockMvc: MockMvc
 
     companion object {
@@ -19,11 +21,14 @@ abstract class AbsControllerTest(private val baseUrl: String) {
     @BeforeEach
     abstract fun init()
 
-    protected val uri:String
-        get() {return baseUrl}
+    protected val uri: String
+        get() {
+            return baseUrl
+        }
+
     fun uri(vararg children: Any): String {
         val strBuilder = StringBuilder(baseUrl)
-        for (child in children){
+        for (child in children) {
             if (child is IEntityVO.Id<*>)
                 strBuilder.append("/${child.value}")
             else
