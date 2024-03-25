@@ -20,9 +20,9 @@ class ProjectTypeRepository : AbsRepository<Int, ProjectTypes, ProjectType, Proj
         return ProjectType(it[table.name], ProjectType.Id(it[table.id]), it[table.createdAt])
     }
 
-    override fun update(vo: ProjectType): ProjectType {
+    override fun update(vo: ProjectType): ProjectType = transaction {
         ProjectTypes.update(where = { ProjectTypes.id eq vo.id!!.value }) { it[name] = vo.name }
-        return vo
+        vo
     }
 
     override fun new(vo: ProjectType): ProjectType = transaction {
@@ -43,12 +43,12 @@ class ProjectTypeRepository : AbsRepository<Int, ProjectTypes, ProjectType, Proj
             ?: Result.failure(ProjectTypeNotFoundException(projectName))
     }
 
-    fun find(projectId: Project.Id): List<ProjectType> = transaction {
-        ProjectTypeRelations
+    fun find(projectId: Project.Id? = null): List<ProjectType> = transaction {
+        val query = ProjectTypeRelations
             .join(ProjectTypes, JoinType.LEFT, onColumn = ProjectTypeRelations.typeId, otherColumn = ProjectTypes.id)
             .select(ProjectTypes.fields)
-            .where { ProjectTypeRelations.projectId eq projectId.value }
-            .map { relationObjectMapping(it) }
+        projectId?.let { query.where { ProjectTypeRelations.projectId eq projectId.value } }
+        query.map { relationObjectMapping(it) }
     }
 
     fun delete(projectId: Project.Id): Int = transaction {
