@@ -47,12 +47,12 @@ class PostController(
     @PostMapping
     fun createPost(
         @RequestPart("data") newPostDTO: NewPostDTO,
-        @RequestParam("files") files: List<MultipartFile>?,
+        @RequestParam("files") files: List<MultipartFile>?
     ): ResponseEntity<PostResponseDTO> {
         val category = newPostDTO.category?.let {
             categoryService.findByName(it) ?: throw CategoryNotFoundException(it)
         }
-        val user = getSignedUser()!!
+        val user = getSignedUser().getOrThrow()
         val post = postService.createPost(newPostDTO, user, category?.id)
 
         fileService.create(post, newPostDTO.content, files)
@@ -87,7 +87,7 @@ class PostController(
     ): ResponseEntity<PostResponseDTO> {
         val category =
             updateDTO.category?.let { categoryService.findByName(it) ?: throw CategoryNotFoundException(it) }
-        val user = getSignedUser()!!
+        val user = getSignedUser().getOrThrow()
         val post =
             postService.updatePost(id, updateDTO, category?.id, user) ?: throw PostNotFoundException(id)
         fileService.update(post, updateDTO, files)
@@ -102,7 +102,7 @@ class PostController(
         @PathVariable id: Post.Id,
     ): ResponseEntity<Boolean> {
         val post = postService.findPost(id) ?: throw PostNotFoundException(id)
-        val result = postService.deletePost(id, getSignedUser()!!)
+        val result = postService.deletePost(id, getSignedUser().getOrThrow())
         fileService.delete(post)
         return ResponseEntity(result, HttpStatus.OK)
     }
@@ -124,7 +124,7 @@ class PostController(
         @RequestPart("value") newCommentDTO: ModifyCommentDTO,
         @RequestParam("files") files: List<MultipartFile>?,
     ): ResponseEntity<CommentDTO> {
-        val user = getSignedUser()
+        val user = getSignedUser().getOrNull()
         postService.findPost(id) ?: throw PostNotFoundException(id)
         val comment = commentService.addComment(id, newCommentDTO, user)
         return ResponseEntity(CommentDTO(comment), HttpStatus.CREATED)

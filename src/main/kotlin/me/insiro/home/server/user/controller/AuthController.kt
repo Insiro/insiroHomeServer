@@ -21,7 +21,7 @@ import org.springframework.web.context.request.RequestContextHolder
 class AuthController(private val authenticateProvider: AuthenticateProvider) : IController {
     @GetMapping
     fun getSignedUserInfo(): ResponseEntity<*> {
-        val user = getSignedUser() ?: ResponseEntity("Not Authenticated", HttpStatus.UNAUTHORIZED)
+        val user = getSignedUser().getOrThrow()
         return ResponseEntity(user, HttpStatus.OK)
     }
 

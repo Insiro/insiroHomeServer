@@ -30,7 +30,7 @@ class CommentController(private val commentService: CommentService) : IControlle
         @PathVariable id: Comment.Id,
         @RequestBody modifyCommentDTO: ModifyCommentDTO
     ): ResponseEntity<CommentDTO> {
-        val user = getSignedUser()
+        val user = getSignedUser().getOrNull()
         val parent = commentService.getComment(id) ?: throw CommentNotFoundException(id)
         val appended = commentService.appendComment(parent, modifyCommentDTO, user)
         return ResponseEntity(CommentDTO(appended), HttpStatus.CREATED)
@@ -57,7 +57,7 @@ class CommentController(private val commentService: CommentService) : IControlle
         @PathVariable id: Comment.Id,
         @RequestBody modifyCommentDTO: ModifyCommentDTO
     ): ResponseEntity<CommentDTO> {
-        val user = getSignedUser()
+        val user = getSignedUser().getOrNull()
         val commentDTO = commentService.updateComment(id, modifyCommentDTO, user)?.let(::CommentDTO)
             ?: throw CommentNotFoundException(id)
         return ResponseEntity(commentDTO, HttpStatus.OK)
@@ -65,7 +65,7 @@ class CommentController(private val commentService: CommentService) : IControlle
 
     @DeleteMapping("{id}")
     fun deleteComment(@PathVariable id: Comment.Id, @RequestBody modifierDTO: ModifierDTO): ResponseEntity<String> {
-        val user = getSignedUser()
+        val user = getSignedUser().getOrNull()
         commentService.deleteComment(id, modifierDTO, user)
         return ResponseEntity("Success", HttpStatus.OK)
     }

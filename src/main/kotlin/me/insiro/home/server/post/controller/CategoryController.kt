@@ -9,6 +9,7 @@ import me.insiro.home.server.post.service.CategoryService
 import me.insiro.home.server.post.service.PostService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.annotation.Secured
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -27,6 +28,7 @@ class CategoryController(
         return ResponseEntity(categories, HttpStatus.OK)
     }
 
+    @Secured("ROLE_WRITER")
     @PostMapping
     fun createCategory(@RequestBody newCategoryDTO: ModifyCategoryDTO): ResponseEntity<CategoryDTO> {
         val category = categoryService.create(newCategoryDTO) ?: throw CategoryConflictException(newCategoryDTO.name)
@@ -39,6 +41,7 @@ class CategoryController(
         return ResponseEntity(CategoryDTO(category), HttpStatus.OK)
     }
 
+    @Secured("ROLE_WRITER")
     @PatchMapping("{name}")
     fun updateCategory(
         @PathVariable name: String,
@@ -48,6 +51,7 @@ class CategoryController(
         return ResponseEntity(CategoryDTO(category), HttpStatus.OK)
     }
 
+    @Secured("ROLE_WRITER")
     @DeleteMapping("{name}")
     fun deleteCategory(@PathVariable name: String): ResponseEntity<String> {
         val categoryId = categoryService.delete(name) ?: throw CategoryNotFoundException(name)
