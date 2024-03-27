@@ -2,15 +2,15 @@ package me.insiro.home.server.post.entity
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import me.insiro.home.server.application.domain.BaseIDTable
-import me.insiro.home.server.application.domain.IBaseEntityID
-import me.insiro.home.server.application.domain.IBaseEntityVO
+import me.insiro.home.server.application.domain.entity.LongBaseTable
+import me.insiro.home.server.application.domain.entity.LongEntityVO
+import me.insiro.home.server.application.domain.entity.LongID
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.json.json
 import java.time.LocalDateTime
 
 
-object Comments : BaseIDTable() {
+object Comments : LongBaseTable() {
     val content = varchar("content", 300)
     val postId = reference("postId", Posts.id)
     val parentId = long("parentId").nullable()
@@ -24,10 +24,10 @@ data class Comment(
     var author: CommentUserInfo,
     override val id: Id? = null,
     override val createdAt: LocalDateTime? = null,
-) : IBaseEntityVO {
+) : LongEntityVO {
     @JvmInline
     @Serializable
-    value class Id(override val value: Long) : IBaseEntityID {
+    value class Id(override val value: Long) : LongID {
         constructor(entityID: EntityID<Long>) : this(entityID.value)
     }
 }

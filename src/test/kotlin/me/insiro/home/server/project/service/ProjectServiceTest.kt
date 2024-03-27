@@ -1,6 +1,6 @@
 package me.insiro.home.server.project.service
 
-import me.insiro.home.server.application.domain.Status
+import me.insiro.home.server.application.domain.entity.Status
 import me.insiro.home.server.project.dto.project.NewProjectDTO
 import me.insiro.home.server.project.dto.project.UpdateProjectDTO
 import me.insiro.home.server.project.entity.*
@@ -44,7 +44,7 @@ class ProjectServiceTest : AbsDataBaseTest(Projects, ProjectTypes, ProjectTypeRe
         assertNotNull(result)
         assertEquals(dto.title, result!!.title)
         assertEquals(dto.status, result.status)
-        assertEquals(dto.types?.sorted(), result.types?.map{it.name}?.sorted())
+        assertEquals(dto.types?.sorted(), result.types?.map { it.name }?.sorted())
         assertNotNull(result.createdAt)
         assertNotNull(result.id)
     }

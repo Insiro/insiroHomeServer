@@ -1,7 +1,7 @@
 package me.insiro.home.server.project.service
 
-import me.insiro.home.server.application.domain.OffsetLimit
-import me.insiro.home.server.application.domain.Status
+import me.insiro.home.server.application.domain.dto.OffsetLimit
+import me.insiro.home.server.application.domain.entity.Status
 import me.insiro.home.server.project.dto.project.NewProjectDTO
 import me.insiro.home.server.project.dto.project.UpdateProjectDTO
 import me.insiro.home.server.project.entity.Project

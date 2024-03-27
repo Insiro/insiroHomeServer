@@ -1,7 +1,7 @@
 package me.insiro.home.server.user.controller
 
 import jakarta.servlet.http.HttpServletRequest
-import me.insiro.home.server.application.IController
+import me.insiro.home.server.application.ISignedController
 import me.insiro.home.server.user.dto.AuthDetail
 import me.insiro.home.server.user.dto.SignInDTO
 import me.insiro.home.server.user.dto.UserDTO
@@ -18,7 +18,7 @@ import org.springframework.web.context.request.RequestContextHolder
 
 @RestController
 @RequestMapping("auth")
-class AuthController(private val authenticateProvider: AuthenticateProvider) : IController {
+class AuthController(private val authenticateProvider: AuthenticateProvider) : ISignedController {
     @GetMapping
     fun getSignedUserInfo(): ResponseEntity<*> {
         val user = getSignedUser().getOrThrow()

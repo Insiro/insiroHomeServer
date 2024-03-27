@@ -1,4 +1,4 @@
-package me.insiro.home.server.application.domain
+package me.insiro.home.server.application.domain.dto
 
 interface IModifyFileDTO {
     val title: String?

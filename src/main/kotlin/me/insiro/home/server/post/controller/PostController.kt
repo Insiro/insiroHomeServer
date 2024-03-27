@@ -1,8 +1,8 @@
 package me.insiro.home.server.post.controller
 
-import me.insiro.home.server.application.IController
-import me.insiro.home.server.application.domain.OffsetLimit
-import me.insiro.home.server.application.domain.Status
+import me.insiro.home.server.application.ISignedController
+import me.insiro.home.server.application.domain.dto.OffsetLimit
+import me.insiro.home.server.application.domain.entity.Status
 import me.insiro.home.server.file.service.PostFileService
 import me.insiro.home.server.post.dto.category.CategoryDTO
 import me.insiro.home.server.post.dto.comment.CommentDTO
@@ -30,7 +30,7 @@ class PostController(
     private val categoryService: CategoryService,
     private val fileService: PostFileService,
     val commentService: CommentService,
-) : IController {
+) : ISignedController {
 
     @GetMapping
     fun getPosts(

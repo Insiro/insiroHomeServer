@@ -2,7 +2,7 @@ package me.insiro.home.server.testUtils
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import me.insiro.home.server.application.domain.IEntityVO
+import me.insiro.home.server.application.domain.entity.IEntityVO
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension

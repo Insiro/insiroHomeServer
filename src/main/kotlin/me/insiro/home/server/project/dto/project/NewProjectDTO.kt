@@ -1,10 +1,10 @@
 package me.insiro.home.server.project.dto.project
 
-import me.insiro.home.server.application.domain.Status
+import me.insiro.home.server.application.domain.entity.Status
 
 data class NewProjectDTO(
-        val title: String,
-        val status: Status?,
-        val content: String,
-        val types: List<String>?
+    val title: String,
+    val status: Status?,
+    val content: String,
+    val types: List<String>?
 )

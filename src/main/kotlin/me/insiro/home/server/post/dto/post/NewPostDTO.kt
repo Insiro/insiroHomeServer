@@ -1,6 +1,6 @@
 package me.insiro.home.server.post.dto.post
 
-import me.insiro.home.server.application.domain.Status
+import me.insiro.home.server.application.domain.entity.Status
 
 
 data class NewPostDTO(

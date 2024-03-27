@@ -1,23 +1,24 @@
 package me.insiro.home.server.post.dto.post
 
-import me.insiro.home.server.application.domain.IResponseDTO
-import me.insiro.home.server.application.domain.Status
+import me.insiro.home.server.application.domain.dto.IResponseDTO
+import me.insiro.home.server.application.domain.entity.Status
 import me.insiro.home.server.post.dto.category.CategoryDTO
 import me.insiro.home.server.post.dto.comment.CommentDTO
 import me.insiro.home.server.post.entity.Post
 import me.insiro.home.server.user.dto.SimpleUserDTO
 import java.time.LocalDateTime
+import java.util.*
 
 
 data class PostResponseDTO(
-    override val id: Long,
+    override val id: UUID,
     val title: String,
     val author: SimpleUserDTO,
     val category: CategoryDTO?,
     val status: Status,
     override val createdAt: LocalDateTime,
     val comments: List<CommentDTO>?
-) : IResponseDTO<Long> {
+) : IResponseDTO<UUID> {
     constructor(
         post: Post.Raw,
         author: SimpleUserDTO,
