@@ -1,6 +1,6 @@
 package me.insiro.home.server.post.service
 
-import me.insiro.home.server.application.domain.Status
+import me.insiro.home.server.application.domain.entity.Status
 import me.insiro.home.server.post.dto.post.NewPostDTO
 import me.insiro.home.server.post.dto.post.UpdatePostDTO
 import me.insiro.home.server.post.entity.Categories

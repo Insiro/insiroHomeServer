@@ -1,29 +1,27 @@
 package me.insiro.home.server.post.entity
 
-import kotlinx.serialization.Serializable
-import me.insiro.home.server.application.domain.IBaseEntityID
-import me.insiro.home.server.application.domain.Status
-import me.insiro.home.server.application.domain.TitledTable
-import me.insiro.home.server.application.domain.TitledVO
+import me.insiro.home.server.application.domain.entity.*
 import me.insiro.home.server.user.entity.User
 import me.insiro.home.server.user.entity.Users
 import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.sql.Column
 import java.time.LocalDateTime
+import java.util.*
 
-object Posts : TitledTable() {
+object Posts : UUIDBaseTable(), ITitledTable {
+    override val title: Column<String> = varchar("title", 100)
     val status = enumeration<Status>("status")
     val authorId = reference("authorId", Users.id)
     val categoryId = reference("category", Categories.id).nullable()
 }
 
-sealed interface Post : TitledVO {
+sealed interface Post : TitledVO, UUIDEntityVO {
     var status: Status
-    override val id:Id?
+    override val id: Id?
 
     @JvmInline
-    @Serializable
-    value class Id(override val value: Long) : IBaseEntityID {
-        constructor(entityID: EntityID<Long>) : this(entityID.value)
+    value class Id(override val value: UUID) :IEntityVO.Id<UUID> {
+        constructor(entityID: EntityID<UUID>) : this(entityID.value)
     }
 
 

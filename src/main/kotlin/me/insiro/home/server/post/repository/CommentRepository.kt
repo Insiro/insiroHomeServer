@@ -1,7 +1,7 @@
 package me.insiro.home.server.post.repository
 
 import me.insiro.home.server.application.AbsRepository
-import me.insiro.home.server.application.domain.OffsetLimit
+import me.insiro.home.server.application.domain.dto.OffsetLimit
 import me.insiro.home.server.post.entity.Comment
 import me.insiro.home.server.post.entity.Comments
 import me.insiro.home.server.post.entity.Post

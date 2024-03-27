@@ -2,8 +2,8 @@ package me.insiro.home.server.project.repository
 
 
 import me.insiro.home.server.application.AbsRepository
-import me.insiro.home.server.application.domain.OffsetLimit
-import me.insiro.home.server.application.domain.Status
+import me.insiro.home.server.application.domain.dto.OffsetLimit
+import me.insiro.home.server.application.domain.entity.Status
 import me.insiro.home.server.project.entity.Project
 import me.insiro.home.server.project.entity.Projects
 import me.insiro.home.server.project.exception.ProjectNotFoundException
@@ -15,9 +15,10 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
+import java.util.*
 
 @Repository
-class ProjectRepository : AbsRepository<Long, Projects, Project, Project.Id> {
+class ProjectRepository : AbsRepository<UUID, Projects, Project, Project.Id> {
     override val table = Projects
 
     override fun relationObjectMapping(it: ResultRow): Project.Raw {

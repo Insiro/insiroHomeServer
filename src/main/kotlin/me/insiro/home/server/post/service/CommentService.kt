@@ -1,6 +1,6 @@
 package me.insiro.home.server.post.service
 
-import me.insiro.home.server.application.domain.OffsetLimit
+import me.insiro.home.server.application.domain.dto.OffsetLimit
 import me.insiro.home.server.application.exception.UnAuthorizedException
 import me.insiro.home.server.post.dto.comment.ModifierDTO
 import me.insiro.home.server.post.dto.comment.ModifyCommentDTO

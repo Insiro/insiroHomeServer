@@ -1,8 +1,8 @@
 package me.insiro.home.server.post.repository
 
 import me.insiro.home.server.application.AbsRepository
-import me.insiro.home.server.application.domain.OffsetLimit
-import me.insiro.home.server.application.domain.Status
+import me.insiro.home.server.application.domain.dto.OffsetLimit
+import me.insiro.home.server.application.domain.entity.Status
 import me.insiro.home.server.post.entity.Categories
 import me.insiro.home.server.post.entity.Category
 import me.insiro.home.server.post.entity.Post
@@ -14,9 +14,10 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
+import java.util.*
 
 @Repository
-class PostRepository : AbsRepository<Long, Posts, Post.Raw, Post.Id> {
+class PostRepository : AbsRepository<UUID, Posts, Post.Raw, Post.Id> {
     override val table = Posts
 
 

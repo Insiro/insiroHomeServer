@@ -1,11 +1,12 @@
 package me.insiro.home.server.project.dto.project
 
-import me.insiro.home.server.application.domain.Status
+import me.insiro.home.server.application.domain.entity.Status
 import me.insiro.home.server.project.entity.Project
 import me.insiro.home.server.project.entity.ProjectType
+import java.util.*
 
 data class ProjectDTO(
-    val id: Long,
+    val id: UUID,
     val status: Status,
     var type: List<ProjectType>? = null,
 ) {

@@ -1,12 +1,12 @@
 package me.insiro.home.server.application
 
-import me.insiro.home.server.application.domain.IEntityVO
-import me.insiro.home.server.application.domain.OffsetLimit
+import me.insiro.home.server.application.domain.dto.OffsetLimit
+import me.insiro.home.server.application.domain.entity.IEntityVO
+import me.insiro.home.server.application.domain.entity.IntBaseTable
 import me.insiro.home.server.testUtils.AbsDataBaseTest
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -20,7 +20,7 @@ import java.time.LocalDateTime
 @ExtendWith(MockitoExtension::class)
 
 class AbsRepositoryTest : AbsDataBaseTest(TestEntities) {
-    object TestEntities : IntIdTable() {
+    object TestEntities : IntBaseTable() {
         val value = integer("value")
     }
 

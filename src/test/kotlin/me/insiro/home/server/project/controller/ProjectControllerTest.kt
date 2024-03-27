@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import java.time.LocalDateTime
+import java.util.*
 
 @ExtendWith(MockitoExtension::class)
 class ProjectControllerTest : AbsControllerTest("projects") {
@@ -38,7 +39,7 @@ class ProjectControllerTest : AbsControllerTest("projects") {
     override fun init() {
         controller = ProjectController(projectService, fileService)
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build()
-        project = Project.Joined("title", id = Project.Id(1), createdAt = LocalDateTime.now())
+        project = Project.Joined("title", id = Project.Id(UUID.randomUUID()), createdAt = LocalDateTime.now())
     }
 
     @Test

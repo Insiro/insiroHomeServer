@@ -1,14 +1,15 @@
 package me.insiro.home.server.application
 
-import me.insiro.home.server.application.domain.IEntityVO
-import me.insiro.home.server.application.domain.OffsetLimit
+import me.insiro.home.server.application.domain.dto.OffsetLimit
+import me.insiro.home.server.application.domain.entity.IBaseTable
+import me.insiro.home.server.application.domain.entity.IEntityVO
 import org.jetbrains.exposed.dao.DaoEntityID
 import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
-interface AbsRepository<Id : Comparable<Id>, Table, VO, VoId> where   VO : IEntityVO<Id>, Table : IdTable<Id>, VoId : IEntityVO.Id<Id> {
+interface AbsRepository<Id : Comparable<Id>, Table, VO, VoId> where   VO : IEntityVO<Id>, Table : IBaseTable<Id>, Table : IdTable<Id>, VoId : IEntityVO.Id<Id> {
     val table: Table
     fun relationObjectMapping(it: ResultRow): VO
     fun findById(id: VoId): VO? = transaction {

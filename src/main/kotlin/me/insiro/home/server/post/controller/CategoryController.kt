@@ -1,6 +1,6 @@
 package me.insiro.home.server.post.controller
 
-import me.insiro.home.server.application.domain.OffsetLimit
+import me.insiro.home.server.application.domain.dto.OffsetLimit
 import me.insiro.home.server.post.dto.category.CategoryDTO
 import me.insiro.home.server.post.dto.category.ModifyCategoryDTO
 import me.insiro.home.server.post.exception.category.CategoryConflictException

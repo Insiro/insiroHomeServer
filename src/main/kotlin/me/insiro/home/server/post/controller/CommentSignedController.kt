@@ -1,7 +1,7 @@
 package me.insiro.home.server.post.controller
 
-import me.insiro.home.server.application.IController
-import me.insiro.home.server.application.domain.OffsetLimit
+import me.insiro.home.server.application.ISignedController
+import me.insiro.home.server.application.domain.dto.OffsetLimit
 import me.insiro.home.server.post.dto.comment.CommentDTO
 import me.insiro.home.server.post.dto.comment.ModifierDTO
 import me.insiro.home.server.post.dto.comment.ModifyCommentDTO
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*
 
 @RequestMapping("comments")
 @RestController
-class CommentController(private val commentService: CommentService) : IController {
+class CommentSignedController(private val commentService: CommentService) : ISignedController {
     @GetMapping
     fun getComments(
         @RequestParam(required = false) offset: Long = 0,

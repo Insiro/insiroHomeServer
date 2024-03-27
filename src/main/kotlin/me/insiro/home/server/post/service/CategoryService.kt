@@ -1,6 +1,6 @@
 package me.insiro.home.server.post.service
 
-import me.insiro.home.server.application.domain.OffsetLimit
+import me.insiro.home.server.application.domain.dto.OffsetLimit
 import me.insiro.home.server.post.dto.category.ModifyCategoryDTO
 import me.insiro.home.server.post.entity.Category
 import me.insiro.home.server.post.repository.CategoryRepository

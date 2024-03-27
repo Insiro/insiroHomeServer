@@ -5,7 +5,7 @@ import me.insiro.home.server.user.dto.AuthDetail
 import me.insiro.home.server.user.entity.User
 import org.springframework.security.core.context.SecurityContextHolder
 
-interface IController {
+interface ISignedController {
     fun getSignedUser(): Result<User> {
         val authentication = SecurityContextHolder.getContext().authentication
         if (authentication != null && authentication.isAuthenticated) {
