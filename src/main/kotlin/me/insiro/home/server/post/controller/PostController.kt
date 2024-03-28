@@ -121,8 +121,7 @@ class PostController(
     @PostMapping("{id}/comments")
     fun addComment(
         @PathVariable id: Post.Id,
-        @RequestPart("value") newCommentDTO: ModifyCommentDTO,
-        @RequestParam("files") files: List<MultipartFile>?,
+        @RequestBody newCommentDTO: ModifyCommentDTO,
     ): ResponseEntity<CommentDTO> {
         val user = getSignedUser().getOrNull()
         postService.findPost(id) ?: throw PostNotFoundException(id)
