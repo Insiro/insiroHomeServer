@@ -3,8 +3,6 @@ package me.insiro.home.server.post.controller
 import me.insiro.home.server.application.domain.dto.OffsetLimit
 import me.insiro.home.server.post.dto.category.CategoryDTO
 import me.insiro.home.server.post.dto.category.ModifyCategoryDTO
-import me.insiro.home.server.post.exception.category.CategoryConflictException
-import me.insiro.home.server.post.exception.category.CategoryNotFoundException
 import me.insiro.home.server.post.service.CategoryService
 import me.insiro.home.server.post.service.PostService
 import org.springframework.http.HttpStatus
@@ -31,13 +29,13 @@ class CategoryController(
     @Secured("ROLE_WRITER")
     @PostMapping
     fun createCategory(@RequestBody newCategoryDTO: ModifyCategoryDTO): ResponseEntity<CategoryDTO> {
-        val category = categoryService.create(newCategoryDTO) ?: throw CategoryConflictException(newCategoryDTO.name)
-        return ResponseEntity(CategoryDTO(category), HttpStatus.CREATED)
+        val dto = categoryService.create(newCategoryDTO).let(::CategoryDTO)
+        return ResponseEntity(dto, HttpStatus.CREATED)
     }
 
     @GetMapping("{name}")
     fun getCategory(@PathVariable name: String): ResponseEntity<CategoryDTO> {
-        val category = categoryService.findByName(name) ?: throw CategoryNotFoundException(name)
+        val category = categoryService.findByName(name).getOrThrow()
         return ResponseEntity(CategoryDTO(category), HttpStatus.OK)
     }
 
@@ -47,14 +45,14 @@ class CategoryController(
         @PathVariable name: String,
         @RequestBody modifyDTO: ModifyCategoryDTO
     ): ResponseEntity<CategoryDTO> {
-        val category = categoryService.update(name, modifyDTO) ?: throw CategoryNotFoundException(name)
-        return ResponseEntity(CategoryDTO(category), HttpStatus.OK)
+        val dto = categoryService.update(name, modifyDTO).getOrThrow().let(::CategoryDTO)
+        return ResponseEntity(dto, HttpStatus.OK)
     }
 
     @Secured("ROLE_WRITER")
     @DeleteMapping("{name}")
     fun deleteCategory(@PathVariable name: String): ResponseEntity<String> {
-        val categoryId = categoryService.delete(name) ?: throw CategoryNotFoundException(name)
+        val categoryId = categoryService.delete(name).getOrThrow()
         postService.changeCategoryOfPosts(categoryId, null)
         return ResponseEntity("success", HttpStatus.OK)
     }

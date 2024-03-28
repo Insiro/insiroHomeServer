@@ -11,8 +11,6 @@ import me.insiro.home.server.post.dto.post.NewPostDTO
 import me.insiro.home.server.post.dto.post.PostResponseDTO
 import me.insiro.home.server.post.dto.post.UpdatePostDTO
 import me.insiro.home.server.post.entity.Post
-import me.insiro.home.server.post.exception.category.CategoryNotFoundException
-import me.insiro.home.server.post.exception.post.PostNotFoundException
 import me.insiro.home.server.post.service.CategoryService
 import me.insiro.home.server.post.service.CommentService
 import me.insiro.home.server.post.service.PostService
@@ -49,9 +47,7 @@ class PostController(
         @RequestPart("data") newPostDTO: NewPostDTO,
         @RequestParam("files") files: List<MultipartFile>?
     ): ResponseEntity<PostResponseDTO> {
-        val category = newPostDTO.category?.let {
-            categoryService.findByName(it) ?: throw CategoryNotFoundException(it)
-        }
+        val category = newPostDTO.category?.let { categoryService.findByName(it).getOrThrow() }
         val user = getSignedUser().getOrThrow()
         val post = postService.createPost(newPostDTO, user, category?.id).getOrThrow()
 
@@ -72,7 +68,7 @@ class PostController(
         @RequestParam(required = false) limit: Int? = null
     ): ResponseEntity<PostResponseDTO> {
         val offsetLimit = limit?.let { OffsetLimit(offset, limit) }
-        val post = postService.findJoinedPost(id) ?: throw PostNotFoundException(id)
+        val post = postService.findJoinedPost(id).getOrThrow()
         val comments = commentService.findComments(id, offsetLimit).map { CommentDTO(it) }
 
         return ResponseEntity(PostResponseDTO(post, comments), HttpStatus.OK)
@@ -85,11 +81,9 @@ class PostController(
         @RequestPart("data") updateDTO: UpdatePostDTO,
         @RequestParam("files") files: List<MultipartFile>?
     ): ResponseEntity<PostResponseDTO> {
-        val category =
-            updateDTO.category?.let { categoryService.findByName(it) ?: throw CategoryNotFoundException(it) }
+        val category = updateDTO.category?.let { categoryService.findByName(it).getOrThrow() }
         val user = getSignedUser().getOrThrow()
-        val post =
-            postService.updatePost(id, updateDTO, category?.id, user) ?: throw PostNotFoundException(id)
+        val post = postService.updatePost(id, updateDTO, category?.id, user).getOrThrow()
         fileService.update(post, updateDTO, files)
         return ResponseEntity(
             PostResponseDTO(post, SimpleUserDTO(user), category?.let { CategoryDTO(it) }),
@@ -101,8 +95,8 @@ class PostController(
     fun deletePost(
         @PathVariable id: Post.Id,
     ): ResponseEntity<Boolean> {
-        val post = postService.findPost(id) ?: throw PostNotFoundException(id)
-        val result = postService.deletePost(id, getSignedUser().getOrThrow())
+        val post = postService.findPost(id).getOrThrow()
+        val result = postService.deletePost(id, getSignedUser().getOrThrow()).getOrThrow()
         fileService.delete(post)
         return ResponseEntity(result, HttpStatus.OK)
     }
@@ -124,7 +118,7 @@ class PostController(
         @RequestBody newCommentDTO: ModifyCommentDTO,
     ): ResponseEntity<CommentDTO> {
         val user = getSignedUser().getOrNull()
-        postService.findPost(id) ?: throw PostNotFoundException(id)
+        postService.findPost(id)
         val comment = commentService.addComment(id, newCommentDTO, user)
         return ResponseEntity(CommentDTO(comment), HttpStatus.CREATED)
     }
@@ -136,7 +130,7 @@ class PostController(
         @RequestParam(required = false) limit: Int? = null,
         @RequestParam(required = false) status: List<Status> = arrayListOf(Status.PUBLISHED)
     ): ResponseEntity<List<PostResponseDTO>> {
-        val category = categoryService.findByName(categoryName) ?: throw CategoryNotFoundException(categoryName)
+        val category = categoryService.findByName(categoryName).getOrThrow()
         val offsetLimit = limit?.let { OffsetLimit(offset, limit) }
         val posts = postService.findJoinedPosts(category.id, status, offsetLimit).map { PostResponseDTO(it) }
         return ResponseEntity(posts, HttpStatus.OK)
