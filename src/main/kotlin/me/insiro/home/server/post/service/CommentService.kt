@@ -1,6 +1,6 @@
 package me.insiro.home.server.post.service
 
-import me.insiro.home.server.application.domain.OffsetLimit
+import me.insiro.home.server.application.domain.dto.OffsetLimit
 import me.insiro.home.server.application.exception.UnAuthorizedException
 import me.insiro.home.server.post.dto.comment.ModifierDTO
 import me.insiro.home.server.post.dto.comment.ModifyCommentDTO
@@ -8,6 +8,7 @@ import me.insiro.home.server.post.entity.Comment
 import me.insiro.home.server.post.entity.CommentUserInfo
 import me.insiro.home.server.post.entity.Post
 import me.insiro.home.server.post.exception.comment.CommentModifyForbiddenException
+import me.insiro.home.server.post.exception.comment.CommentNotFoundException
 import me.insiro.home.server.post.repository.CommentRepository
 import me.insiro.home.server.user.dto.UserRole
 import me.insiro.home.server.user.entity.User
@@ -19,21 +20,21 @@ class CommentService(
     private val commentRepository: CommentRepository,
     private val passwordEncoder: PasswordEncoder,
 ) {
-    @Throws(CommentModifyForbiddenException::class)
-    private fun validateModify(comment: Comment, modifyDTO: ModifierDTO, user: User? = null) {
+    private fun validateModify(comment: Comment, modifyDTO: ModifierDTO, user: User? = null): Result<Unit> {
         assert(comment.id != null)
         when (val author = comment.author) {
             is CommentUserInfo.Anonymous -> {
                 val info = modifyDTO as ModifierDTO.IAnonymous
                 if (author.name != info.name && passwordEncoder.matches(info.password, author.pwd))
-                    throw CommentModifyForbiddenException(comment.id!!, author.name)
+                    return Result.failure(CommentModifyForbiddenException(comment.id!!, author.name))
             }
 
             is CommentUserInfo.UserInfo -> {
                 if (author.id != user?.id && !UserRole.ROLE_ADMIN.isGranted(user))
-                    throw CommentModifyForbiddenException(comment.id!!, user?.id)
+                    return Result.failure(CommentModifyForbiddenException(comment.id!!, user?.id))
             }
         }
+        return Result.success(Unit)
     }
 
     private fun createUserInfo(commentDTO: ModifyCommentDTO, user: User?): CommentUserInfo {
@@ -43,33 +44,36 @@ class CommentService(
                 passwordEncoder.encode(commentDTO.password)
             )
 
-            is ModifyCommentDTO.Signed -> user?.let { CommentUserInfo.UserInfo(user) }?:throw UnAuthorizedException()
+            is ModifyCommentDTO.Signed -> user?.let { CommentUserInfo.UserInfo(user) } ?: throw UnAuthorizedException()
         }
     }
 
-    fun updateComment(id: Comment.Id, updateDto: ModifyCommentDTO, user: User? = null): Comment? {
+    fun updateComment(id: Comment.Id, updateDto: ModifyCommentDTO, user: User? = null): Result<Comment> {
         assert(user != null || updateDto is ModifyCommentDTO.Anonymous)
         // check not found
-        val comment = commentRepository.findById(id) ?: return null
-        validateModify(comment, updateDto, user)
+        val comment = getComment(id).getOrElse { return Result.failure(it) }
+        validateModify(comment, updateDto, user).getOrElse { return Result.failure(it) }
 
-        val updated = comment.copy(content = updateDto.content)
-        return commentRepository.update(updated)
+        val updated = commentRepository.update(comment.copy(content = updateDto.content))
+        return Result.success(updated)
     }
 
-    fun findComments(id: Post.Id?=null, offsetLimit: OffsetLimit?=null, parent:Comment.Id?=null): List<Comment> {
+    fun findComments(id: Post.Id? = null, offsetLimit: OffsetLimit? = null, parent: Comment.Id? = null): List<Comment> {
         return commentRepository.find(postId = id, offsetLimit = offsetLimit, parentId = parent)
     }
 
-    fun deleteComment(id: Comment.Id, modifyDTO: ModifierDTO, user: User? = null): Boolean {
+    fun deleteComment(id: Comment.Id, modifyDTO: ModifierDTO, user: User? = null): Result<Boolean> {
         assert(user != null || modifyDTO is ModifierDTO.Anonymous)
-        val comment = commentRepository.findById(id) ?: return false
-        validateModify(comment, modifyDTO, user)
-        return (commentRepository.delete(comment))
+        // check not found
+        val comment = getComment(id).getOrElse { return Result.failure(it) }
+        validateModify(comment, modifyDTO, user).getOrElse { return Result.failure(it) }
+        return Result.success(commentRepository.delete(comment))
     }
 
-    fun getComment(id: Comment.Id): Comment? {
+    fun getComment(id: Comment.Id): Result<Comment> {
         return commentRepository.findById(id)
+            ?.let { Result.success(it) }
+            ?: return Result.failure(CommentNotFoundException(id))
     }
 
 

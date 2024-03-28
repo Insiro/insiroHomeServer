@@ -1,6 +1,6 @@
 package me.insiro.home.server.post.controller
 
-import me.insiro.home.server.application.domain.Status
+import me.insiro.home.server.application.domain.entity.Status
 import me.insiro.home.server.file.service.PostFileService
 import me.insiro.home.server.post.dto.comment.ModifyCommentDTO
 import me.insiro.home.server.post.dto.post.NewPostDTO
@@ -32,6 +32,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import java.time.LocalDateTime
+import java.util.*
 
 @ExtendWith(MockitoExtension::class)
 class PostControllerTest : AbsControllerTest("/posts") {
@@ -42,13 +43,21 @@ class PostControllerTest : AbsControllerTest("/posts") {
     private val postFileService = mock(PostFileService::class.java)
     private val user = User("testUser", "", "testEmail", 0b1, id = User.Id(1), LocalDateTime.now())
     private val category = Category("Default", Category.Id(0), LocalDateTime.now())
-    private val comment =
-        Comment("", Post.Id(1), null, CommentUserInfo.UserInfo(user), Comment.Id(1), LocalDateTime.now())
     private val post =
-        Post.Raw("testPost", Status.PUBLISHED, user.id!!, category.id, id = Post.Id(1), LocalDateTime.now())
+        Post.Raw(
+            "testPost",
+            Status.PUBLISHED,
+            user.id!!,
+            category.id,
+            id = Post.Id(UUID.randomUUID()),
+            LocalDateTime.now()
+        )
+    private val comment =
+        Comment("", post.id!!, null, CommentUserInfo.UserInfo(user), Comment.Id(1), LocalDateTime.now())
+
     private val joinedPost = Post.Joined(
         "testPost", Status.PUBLISHED,
-        Post.Joined.AuthorInfo(user.id!!, user.name), category, id = Post.Id(1), LocalDateTime.now()
+        Post.Joined.AuthorInfo(user.id!!, user.name), category, id = post.id!!, LocalDateTime.now()
     )
     private val detail = AuthDetail(user)
 
@@ -60,7 +69,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
 
     @Test
     fun testGetPosts() {
-        Mockito.`when`(postService.findJoinedPosts(null, arrayListOf(Status.PUBLISHED),null)).thenReturn(listOf())
+        Mockito.`when`(postService.findJoinedPosts(null, arrayListOf(Status.PUBLISHED), null)).thenReturn(listOf())
         mockMvc.perform(MockMvcRequestBuilders.get(uri))
             .andExpect { status().isOk }
             .andExpect { jsonPath("$").isArray }

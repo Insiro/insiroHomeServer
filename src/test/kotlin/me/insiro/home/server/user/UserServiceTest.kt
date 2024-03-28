@@ -8,6 +8,7 @@ import me.insiro.home.server.user.dto.UserRole
 import me.insiro.home.server.user.entity.User
 import me.insiro.home.server.user.entity.Users
 import me.insiro.home.server.user.exception.UserConflictExcept
+import me.insiro.home.server.user.exception.UserNotFoundException
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Assertions.*
@@ -39,12 +40,9 @@ class UserServiceTest : AbsDataBaseTest(Users) {
     fun getUser() {
         val uid = user.id!!.value
         //Return Null when Wrong ID is requested
-        assertNull(userService.getUser(User.Id(uid + 5)))
-
+        assertThrows<UserNotFoundException>{userService.getUser(User.Id(uid + 5)).getOrThrow()}
         //Return User's VO when
-        val gUser = userService.getUser(user.id!!)
-        assertNotNull(gUser)
-        gUser!!
+        val gUser = userService.getUser(user.id!!).getOrThrow()
         assertEquals(uid, gUser.id!!.value)
         assertEquals(user.name, gUser.name)
         assertEquals(user.email, gUser.email)
@@ -58,8 +56,7 @@ class UserServiceTest : AbsDataBaseTest(Users) {
         val uid = user.id!!
         val updateDTO = UpdateUserDTO("UpdateUser", "newPasswd", null)
 
-        val updated = userService.updateUser(uid, updateDTO)
-        assertNotNull(updated)
+        val updated = userService.updateUser(uid, updateDTO).getOrNull()
         assertEquals(updateDTO.name, updated!!.name)
         assertEquals(user.id, updated.id)
         assertEquals(user.email, updated.email)
@@ -109,7 +106,7 @@ class UserServiceTest : AbsDataBaseTest(Users) {
     fun loadUserByUsername() {
         val details = userService.loadUserByUsername(user.name)
         assertNotNull(details)
-        assertEquals(user.name, details!!.username)
+        assertEquals(user.name, details.username)
         assertEquals(user.hashedPassword, details.password)
 
         assertEquals(user.name, details.user.name)

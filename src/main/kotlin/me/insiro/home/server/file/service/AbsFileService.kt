@@ -1,5 +1,7 @@
-import me.insiro.home.server.application.domain.IModifyFileDTO
-import me.insiro.home.server.application.domain.TitledVO
+package me.insiro.home.server.file.service
+
+import me.insiro.home.server.application.domain.dto.IModifyFileDTO
+import me.insiro.home.server.application.domain.entity.IEntityVO
 import me.insiro.home.server.file.repository.IFileRepository
 import me.insiro.home.server.file.vo.IFileItem
 import me.insiro.home.server.file.vo.VOFileCollection
@@ -7,14 +9,14 @@ import me.insiro.home.server.file.vo.VOFileItem
 import me.insiro.home.server.file.vo.VOTextFileItem
 import org.springframework.web.multipart.MultipartFile
 
-abstract class AbsFileService<VO : TitledVO>(
+abstract class AbsFileService<VO : IEntityVO<*>>(
     protected val domain: String,
     protected val repository: IFileRepository
 ) {
 
     private fun collectionName(vo: VO): String {
         assert(vo.id != null)
-        return "${vo.id}"
+        return "${vo.id!!.value}"
     }
 
     fun create(

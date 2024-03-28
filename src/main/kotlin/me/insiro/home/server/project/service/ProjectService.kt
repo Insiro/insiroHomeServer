@@ -1,11 +1,12 @@
 package me.insiro.home.server.project.service
 
-import me.insiro.home.server.application.domain.OffsetLimit
-import me.insiro.home.server.application.domain.Status
+import me.insiro.home.server.application.domain.dto.OffsetLimit
+import me.insiro.home.server.application.domain.entity.Status
 import me.insiro.home.server.project.dto.project.NewProjectDTO
 import me.insiro.home.server.project.dto.project.UpdateProjectDTO
 import me.insiro.home.server.project.entity.Project
 import me.insiro.home.server.project.entity.ProjectType
+import me.insiro.home.server.project.exception.ProjectDuplicatedException
 import me.insiro.home.server.project.exception.ProjectNotFoundException
 import me.insiro.home.server.project.repository.ProjectRepository
 import me.insiro.home.server.project.repository.ProjectTypeRepository
@@ -20,9 +21,12 @@ class ProjectService(val projectRepository: ProjectRepository, val typeRepositor
         typeNames.map { typeRepository.addRelationOrInsert(projectId, it) }
     }
 
-    fun create(dto: NewProjectDTO): Project {
-        val project = projectRepository.new(Project.Raw(dto.title, dto.status ?: Status.PUBLISHED))
-        return Project.Joined(project, dto.types?.let { updateRelation(dto.types, project.id!!) })
+    fun create(dto: NewProjectDTO): Result<Project> {
+        val project = when (val id = dto.id) {
+            null -> projectRepository.new(Project.Raw(dto.title, dto.status ?: Status.PUBLISHED))
+            else -> projectRepository.new(Project.Raw(dto.title, dto.status ?: Status.PUBLISHED), id)
+        } ?: return Result.failure(ProjectDuplicatedException(dto.id!!))
+        return Result.success(Project.Joined(project, dto.types?.let { types -> updateRelation(types, project.id!!) }))
     }
 
     fun update(id: Project.Id, dto: UpdateProjectDTO): Project.Joined {
@@ -33,6 +37,11 @@ class ProjectService(val projectRepository: ProjectRepository, val typeRepositor
 
     fun find(filterOption: List<Status>? = null, offsetLimit: OffsetLimit? = null): List<Project> {
         return projectRepository.find(filterOption, offsetLimit)
+    }
+
+    fun findJoined(filterOption: List<Status>? = null, offsetLimit: OffsetLimit? = null): List<Project.Joined> {
+        return projectRepository.find(filterOption, offsetLimit)
+            .map { Project.Joined(it, typeRepository.find(projectId = it.id)) }
     }
 
     fun get(id: Project.Id): Result<Project.Joined> {

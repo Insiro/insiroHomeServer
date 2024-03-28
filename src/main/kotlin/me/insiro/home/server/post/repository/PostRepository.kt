@@ -1,8 +1,8 @@
 package me.insiro.home.server.post.repository
 
 import me.insiro.home.server.application.AbsRepository
-import me.insiro.home.server.application.domain.OffsetLimit
-import me.insiro.home.server.application.domain.Status
+import me.insiro.home.server.application.domain.dto.OffsetLimit
+import me.insiro.home.server.application.domain.entity.Status
 import me.insiro.home.server.post.entity.Categories
 import me.insiro.home.server.post.entity.Category
 import me.insiro.home.server.post.entity.Post
@@ -14,9 +14,10 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
+import java.util.*
 
 @Repository
-class PostRepository : AbsRepository<Long, Posts, Post.Raw, Post.Id> {
+class PostRepository : AbsRepository<UUID, Posts, Post.Raw, Post.Id> {
     override val table = Posts
 
 
@@ -51,6 +52,7 @@ class PostRepository : AbsRepository<Long, Posts, Post.Raw, Post.Id> {
 
     override fun new(vo: Post.Raw): Post.Raw = transaction {
         val created = LocalDateTime.now()
+
         val id = Posts.insertAndGetId {
             it[authorId] = vo.authorId.value
             it[categoryId] = vo.categoryId?.value
@@ -59,6 +61,22 @@ class PostRepository : AbsRepository<Long, Posts, Post.Raw, Post.Id> {
             it[title] = vo.title
         }
         vo.copy(id = Post.Id(id), createdAt = created)
+    }
+
+    fun new(vo: Post.Raw, id: Post.Id): Post.Raw? = transaction {
+        if (Posts.select(Posts.id).where { Posts.id eq id.value }.count() != 0L)
+            return@transaction null
+
+        val created = LocalDateTime.now()
+        Posts.insert {
+            it[authorId] = vo.authorId.value
+            it[categoryId] = vo.categoryId?.value
+            it[status] = vo.status
+            it[createdAt] = created
+            it[title] = vo.title
+            it[Posts.id] = id.value
+        }
+        vo.copy(id = id, createdAt = created)
     }
 
     fun update(

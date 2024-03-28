@@ -1,6 +1,6 @@
 package me.insiro.home.server.post.controller
 
-import me.insiro.home.server.application.domain.Status
+import me.insiro.home.server.application.domain.entity.Status
 import me.insiro.home.server.post.dto.category.ModifyCategoryDTO
 import me.insiro.home.server.post.entity.Category
 import me.insiro.home.server.post.entity.Post
@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import java.util.*
 
 class CategoryControllerTest : AbsControllerTest("/category") {
     private val postService = mock(PostService::class.java)
@@ -76,7 +77,15 @@ class CategoryControllerTest : AbsControllerTest("/category") {
 
     @Test
     fun `get posts By category`() {
-        val posts = listOf(Post.Joined("testPost", Status.PUBLISHED, Post.Joined.AuthorInfo(User.Id(1), "testUser"), category, Post.Id(1)))
+        val posts = listOf(
+            Post.Joined(
+                "testPost",
+                Status.PUBLISHED,
+                Post.Joined.AuthorInfo(User.Id(1), "testUser"),
+                category,
+                Post.Id(UUID.randomUUID())
+            )
+        )
         Mockito.`when`(categoryService.findByName(category.name)).thenReturn(category)
         Mockito.`when`(postService.findJoinedPosts(category.id!!)).thenReturn(posts)
         mockMvc.perform(MockMvcRequestBuilders.post(uri(category.id!!, "posts")))

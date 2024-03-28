@@ -1,6 +1,6 @@
 package me.insiro.home.server.user.dto
 
-import me.insiro.home.server.application.domain.IResponseDTO
+import me.insiro.home.server.application.domain.dto.IResponseDTO
 import me.insiro.home.server.user.entity.User
 import java.time.LocalDateTime
 

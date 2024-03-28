@@ -1,6 +1,6 @@
 package me.insiro.home.server.post.dto.comment
 
-import me.insiro.home.server.application.domain.IResponseDTO
+import me.insiro.home.server.application.domain.dto.IResponseDTO
 import me.insiro.home.server.post.entity.Comment
 import java.time.LocalDateTime
 

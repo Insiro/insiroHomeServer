@@ -1,16 +1,15 @@
 package me.insiro.home.server.project.entity
 
-import me.insiro.home.server.application.domain.IBaseEntityID
-import me.insiro.home.server.application.domain.Status
-import me.insiro.home.server.application.domain.TitledTable
-import me.insiro.home.server.application.domain.TitledVO
+import me.insiro.home.server.application.domain.entity.*
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.Table
 import java.time.LocalDateTime
+import java.util.*
 
-object Projects : TitledTable() {
+object Projects : UUIDBaseTable(), ITitledTable {
     val status = enumeration<Status>("status")
+    override val title = varchar("title", 100)
 }
 
 object ProjectTypeRelations : Table() {
@@ -19,13 +18,13 @@ object ProjectTypeRelations : Table() {
     override val primaryKey: PrimaryKey = PrimaryKey(typeId, projectId, name = "typeId_projectId")
 }
 
-sealed interface Project : TitledVO {
+sealed interface Project : UUIDEntityVO, TitledVO {
     val status: Status
     override val id: Id?
 
     @JvmInline
-    value class Id(override val value: Long) : IBaseEntityID {
-        constructor(entityID: EntityID<Long>) : this(entityID.value)
+    value class Id(override val value: UUID) : VoUUID {
+        constructor(entityID: EntityID<UUID>) : this(entityID.value)
     }
 
     data class Raw(
