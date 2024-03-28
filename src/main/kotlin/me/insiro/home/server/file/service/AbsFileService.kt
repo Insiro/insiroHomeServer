@@ -16,7 +16,7 @@ abstract class AbsFileService<VO : IEntityVO<*>>(
 
     private fun collectionName(vo: VO): String {
         assert(vo.id != null)
-        return "${vo.id}"
+        return "${vo.id!!.value}"
     }
 
     fun create(
