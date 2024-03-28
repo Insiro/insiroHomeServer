@@ -20,9 +20,9 @@ import org.springframework.web.context.request.RequestContextHolder
 @RequestMapping("auth")
 class AuthController(private val authenticateProvider: AuthenticateProvider) : ISignedController {
     @GetMapping
-    fun getSignedUserInfo(): ResponseEntity<*> {
+    fun getSignedUserInfo(): ResponseEntity<UserDTO> {
         val user = getSignedUser().getOrThrow()
-        return ResponseEntity(user, HttpStatus.OK)
+        return ResponseEntity(UserDTO.fromUser(user), HttpStatus.OK)
     }
 
     @PostMapping

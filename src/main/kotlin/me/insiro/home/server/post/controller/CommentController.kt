@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*
 
 @RequestMapping("comments")
 @RestController
-class CommentSignedController(private val commentService: CommentService) : ISignedController {
+class CommentController(private val commentService: CommentService) : ISignedController {
     @GetMapping
     fun getComments(
         @RequestParam(required = false) offset: Long = 0,
