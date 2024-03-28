@@ -53,7 +53,7 @@ class PostController(
             categoryService.findByName(it) ?: throw CategoryNotFoundException(it)
         }
         val user = getSignedUser().getOrThrow()
-        val post = postService.createPost(newPostDTO, user, category?.id)
+        val post = postService.createPost(newPostDTO, user, category?.id).getOrThrow()
 
         fileService.create(post, newPostDTO.content, files)
 

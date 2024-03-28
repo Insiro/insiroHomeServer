@@ -6,6 +6,7 @@ import me.insiro.home.server.post.dto.post.NewPostDTO
 import me.insiro.home.server.post.dto.post.UpdatePostDTO
 import me.insiro.home.server.post.entity.Category
 import me.insiro.home.server.post.entity.Post
+import me.insiro.home.server.post.exception.post.PostDuplicatedException
 import me.insiro.home.server.post.exception.post.PostModifyForbiddenException
 import me.insiro.home.server.post.repository.PostRepository
 import me.insiro.home.server.user.dto.UserRole
@@ -24,10 +25,14 @@ class PostService(private val postRepository: PostRepository) {
             throw PostModifyForbiddenException(post.id!!, user.id!!)
     }
 
-    fun createPost(createDTO: NewPostDTO, user: User, categoryId: Category.Id? = null): Post.Raw {
-        val post = Post.Raw(createDTO.title, createDTO.status, user.id!!, categoryId)
-        //TODO: save file content Using FileService
-        return postRepository.new(post)
+    fun createPost(createDTO: NewPostDTO, user: User, categoryId: Category.Id? = null): Result<Post.Raw> {
+        val post = Post.Raw(createDTO.title, createDTO.status ?: Status.PUBLISHED, user.id!!, categoryId)
+        return when (val id = createDTO.id) {
+            null -> postRepository.new(post)
+            else -> postRepository.new(post, id)
+        }?.let { Result.success(it) }
+            ?: return Result.failure(PostDuplicatedException(createDTO.id!!))
+
     }
 
     fun updatePost(id: Post.Id, updateDTO: UpdatePostDTO, categoryId: Category.Id?, user: User): Post.Raw? {
@@ -55,12 +60,20 @@ class PostService(private val postRepository: PostRepository) {
         return postRepository.findById(id)
     }
 
-    fun findPosts(id: Category.Id?=null, status:List<Status>?=null, offsetLimit: OffsetLimit? = null): List<Post.Raw> {
+    fun findPosts(
+        id: Category.Id? = null,
+        status: List<Status>? = null,
+        offsetLimit: OffsetLimit? = null
+    ): List<Post.Raw> {
         return postRepository.find(id, status, offsetLimit)
     }
 
-    fun findJoinedPosts(id: Category.Id?=null, status: List<Status>?=null, offsetLimit: OffsetLimit? = null): List<Post.Joined> {
-        return postRepository.findJoining(categoryId = id,status=status, offsetLimit = offsetLimit)
+    fun findJoinedPosts(
+        id: Category.Id? = null,
+        status: List<Status>? = null,
+        offsetLimit: OffsetLimit? = null
+    ): List<Post.Joined> {
+        return postRepository.findJoining(categoryId = id, status = status, offsetLimit = offsetLimit)
     }
 
     fun changeCategoryOfPosts(id: Category.Id, newId: Category.Id?): Int {
