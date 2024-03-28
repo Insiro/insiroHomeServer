@@ -6,7 +6,6 @@ import me.insiro.home.server.post.dto.comment.CommentDTO
 import me.insiro.home.server.post.dto.comment.ModifierDTO
 import me.insiro.home.server.post.dto.comment.ModifyCommentDTO
 import me.insiro.home.server.post.entity.Comment
-import me.insiro.home.server.post.exception.comment.CommentNotFoundException
 import me.insiro.home.server.post.service.CommentService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -30,10 +29,10 @@ class CommentController(private val commentService: CommentService) : ISignedCon
         @PathVariable id: Comment.Id,
         @RequestBody modifyCommentDTO: ModifyCommentDTO
     ): ResponseEntity<CommentDTO> {
+        val parent = commentService.getComment(id).getOrThrow()
         val user = getSignedUser().getOrNull()
-        val parent = commentService.getComment(id) ?: throw CommentNotFoundException(id)
-        val appended = commentService.appendComment(parent, modifyCommentDTO, user)
-        return ResponseEntity(CommentDTO(appended), HttpStatus.CREATED)
+        val appendedDTO = commentService.appendComment(parent, modifyCommentDTO, user).let(::CommentDTO)
+        return ResponseEntity(appendedDTO, HttpStatus.CREATED)
     }
 
     @GetMapping("{id}")
@@ -43,7 +42,7 @@ class CommentController(private val commentService: CommentService) : ISignedCon
         @RequestParam(required = false) offset: Long = 0,
         @RequestParam(required = false) limit: Int? = null
     ): ResponseEntity<CommentDTO> {
-        var commentDTO = commentService.getComment(id)?.let(::CommentDTO) ?: throw CommentNotFoundException(id)
+        var commentDTO = commentService.getComment(id).getOrThrow().let(::CommentDTO)
         if (children) {
             val offsetLimit = limit?.let { OffsetLimit(offset, limit) }
             val childrenDTO = commentService.findComments(parent = id, offsetLimit = offsetLimit).map(::CommentDTO)
@@ -58,8 +57,7 @@ class CommentController(private val commentService: CommentService) : ISignedCon
         @RequestBody modifyCommentDTO: ModifyCommentDTO
     ): ResponseEntity<CommentDTO> {
         val user = getSignedUser().getOrNull()
-        val commentDTO = commentService.updateComment(id, modifyCommentDTO, user)?.let(::CommentDTO)
-            ?: throw CommentNotFoundException(id)
+        val commentDTO = commentService.updateComment(id, modifyCommentDTO, user).getOrThrow().let(::CommentDTO)
         return ResponseEntity(commentDTO, HttpStatus.OK)
     }
 

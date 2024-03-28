@@ -8,6 +8,7 @@ import me.insiro.home.server.post.entity.Category
 import me.insiro.home.server.post.entity.Post
 import me.insiro.home.server.post.exception.post.PostDuplicatedException
 import me.insiro.home.server.post.exception.post.PostModifyForbiddenException
+import me.insiro.home.server.post.exception.post.PostNotFoundException
 import me.insiro.home.server.post.repository.PostRepository
 import me.insiro.home.server.user.dto.UserRole
 import me.insiro.home.server.user.entity.User
@@ -15,14 +16,14 @@ import org.springframework.stereotype.Service
 
 @Service
 class PostService(private val postRepository: PostRepository) {
-    @Throws(PostModifyForbiddenException::class)
-    private fun validateModifyPermission(post: Post, user: User) {
+    private fun validateModifyPermission(post: Post, user: User): Result<Unit> {
         val authorId = when (post) {
             is Post.Joined -> post.author.id
             is Post.Raw -> post.authorId
         }
         if (authorId != user.id && !UserRole.ROLE_ADMIN.isGranted(user))
-            throw PostModifyForbiddenException(post.id!!, user.id!!)
+            return Result.failure(PostModifyForbiddenException(post.id!!, user.id!!))
+        return Result.success(Unit)
     }
 
     fun createPost(createDTO: NewPostDTO, user: User, categoryId: Category.Id? = null): Result<Post.Raw> {
@@ -35,29 +36,30 @@ class PostService(private val postRepository: PostRepository) {
 
     }
 
-    fun updatePost(id: Post.Id, updateDTO: UpdatePostDTO, categoryId: Category.Id?, user: User): Post.Raw? {
-        val post = postRepository.findById(id) ?: return null
-        validateModifyPermission(post, user)
+    fun updatePost(id: Post.Id, updateDTO: UpdatePostDTO, categoryId: Category.Id?, user: User): Result<Post.Raw> {
+        val post = findPost(id).getOrElse { return Result.failure(it) }
+        validateModifyPermission(post, user).getOrElse { return Result.failure(it) }
 
         val updated =
             postRepository.update(id, categoryId = categoryId, title = updateDTO.title, status = updateDTO.status)
-        //TODO: update file content Using FileService
-        return updated
+        return Result.success(updated)
     }
 
-    fun deletePost(id: Post.Id, user: User): Boolean {
-        val post = postRepository.findById(id) ?: return false
-        validateModifyPermission(post, user)
-        return postRepository.delete(post)
-        //TODO: delete file content Using FileService
+    fun deletePost(id: Post.Id, user: User): Result<Boolean> {
+        val post = findPost(id).getOrElse { return Result.failure(it) }
+        validateModifyPermission(post, user).getOrElse { return Result.failure(it) }
+        val result = postRepository.delete(post)
+        return Result.success(result)
     }
 
-    fun findJoinedPost(id: Post.Id): Post.Joined? {
+    fun findJoinedPost(id: Post.Id): Result<Post.Joined> {
         return postRepository.findByIdJoining(id)
+            ?.let { Result.success(it) }
+            ?: Result.failure(PostNotFoundException(id))
     }
 
-    fun findPost(id: Post.Id): Post.Raw? {
-        return postRepository.findById(id)
+    fun findPost(id: Post.Id): Result<Post.Raw> {
+        return postRepository.findById(id)?.let { Result.success(it) } ?: Result.failure(PostNotFoundException(id))
     }
 
     fun findPosts(
