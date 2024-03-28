@@ -29,7 +29,7 @@ class ProjectController(
         @RequestParam(required = false) status: List<Status> = listOf(Status.PUBLISHED),
     ): ResponseEntity<List<ProjectDTO>> {
         val offsetLimit = limit?.let { OffsetLimit(offset, limit) }
-        val projects = projectService.find(filterOption = status, offsetLimit = offsetLimit).map(::ProjectDTO)
+        val projects = projectService.findJoined(filterOption = status, offsetLimit = offsetLimit).map(::ProjectDTO)
         return ResponseEntity(projects, HttpStatus.OK)
     }
 
@@ -39,7 +39,7 @@ class ProjectController(
         @RequestPart("data") newProjectDTO: NewProjectDTO,
         @RequestParam("files") files: List<MultipartFile>? = null
     ): ResponseEntity<ProjectDTO> {
-        val project = projectService.create(newProjectDTO)
+        val project = projectService.create(newProjectDTO).getOrThrow()
         fileService.create(project, newProjectDTO.content, files)
         return ResponseEntity(ProjectDTO(project), HttpStatus.CREATED)
     }

@@ -7,12 +7,9 @@ import me.insiro.home.server.application.domain.entity.Status
 import me.insiro.home.server.project.entity.Project
 import me.insiro.home.server.project.entity.Projects
 import me.insiro.home.server.project.exception.ProjectNotFoundException
-import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.insertAndGetId
-import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.update
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
 import java.util.*
@@ -52,7 +49,19 @@ class ProjectRepository : AbsRepository<UUID, Projects, Project, Project.Id> {
         (vo as Project.Raw).copy(id = Project.Id(id), createdAt = now)
     }
 
-    fun find(filterOption: List<Status>?=null, offsetLimit: OffsetLimit? = null): List<Project.Raw> =
+    fun new(vo: Project, id: Project.Id): Project.Raw? = transaction {
+        findById(id)?.apply { return@transaction null }
+        val now = LocalDateTime.now()
+        Projects.insert {
+            it[title] = vo.title
+            it[createdAt] = now
+            it[status] = vo.status
+            it[Projects.id] = id.value
+        }
+        (vo as Project.Raw).copy(id = id, createdAt = now)
+    }
+
+    fun find(filterOption: List<Status>? = null, offsetLimit: OffsetLimit? = null): List<Project.Raw> =
         transaction {
             val query = Projects.selectAll()
             filterOption?.let { it.forEach { query.adjustWhere { Projects.status eq it } } }
