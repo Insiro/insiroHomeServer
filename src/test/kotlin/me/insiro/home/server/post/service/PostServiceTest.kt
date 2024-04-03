@@ -7,6 +7,7 @@ import me.insiro.home.server.post.entity.Categories
 import me.insiro.home.server.post.entity.Category
 import me.insiro.home.server.post.entity.Post
 import me.insiro.home.server.post.entity.Posts
+import me.insiro.home.server.post.exception.post.PostNotFoundException
 import me.insiro.home.server.post.repository.PostRepository
 import me.insiro.home.server.testUtils.AbsDataBaseTest
 import me.insiro.home.server.testUtils.DBInserter
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class PostServiceTest : AbsDataBaseTest(Users, Categories, Posts) {
     private lateinit var user: User
@@ -35,7 +37,7 @@ class PostServiceTest : AbsDataBaseTest(Users, Categories, Posts) {
     @Test
     fun `test insert Post and Get`() {
         //test Conflict
-        val newPost = NewPostDTO("newPost", null, "postContent", status = null)
+        val newPost = NewPostDTO("newPost", null, "postContent", status = Status.PUBLISHED)
         val created = postService.createPost(newPost, user, null).getOrThrow()
         val found = postService.findPost(created.id!!).getOrThrow()
         assertEquals(newPost.title, found.title)
@@ -54,7 +56,7 @@ class PostServiceTest : AbsDataBaseTest(Users, Categories, Posts) {
     @Test
     fun `test delete Post and find return null`() {
         postService.deletePost(post.id!!, user)
-        assertNull(postService.findPost(post.id!!))
+        assertThrows<PostNotFoundException> { postService.findPost(post.id!!).getOrThrow() }
     }
 
     @Test

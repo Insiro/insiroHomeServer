@@ -4,6 +4,7 @@ import me.insiro.home.server.application.domain.entity.Status
 import me.insiro.home.server.post.dto.comment.ModifierDTO
 import me.insiro.home.server.post.dto.comment.ModifyCommentDTO
 import me.insiro.home.server.post.entity.*
+import me.insiro.home.server.post.exception.comment.CommentNotFoundException
 import me.insiro.home.server.post.repository.CommentRepository
 import me.insiro.home.server.testUtils.AbsDataBaseTest
 import me.insiro.home.server.testUtils.DBInserter
@@ -15,6 +16,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class CommentServiceTest : AbsDataBaseTest(Users, Categories, Posts, Comments) {
     private val passwordEncoder = PasswordEncoder()
@@ -71,7 +73,7 @@ class CommentServiceTest : AbsDataBaseTest(Users, Categories, Posts, Comments) {
             updateDTO,
             user
         )
-        assertNull(wrongIdUpdated)
+        assertThrows<CommentNotFoundException>{wrongIdUpdated.getOrThrow()}
         val updated = commentService.updateComment(comment.id!!, updateDTO, user)
         assertNotNull(updated)
         assertEquals(updateDTO.content, updated.getOrNull()!!.content)
