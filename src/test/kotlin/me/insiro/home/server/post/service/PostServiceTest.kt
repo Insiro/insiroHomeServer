@@ -12,7 +12,8 @@ import me.insiro.home.server.testUtils.AbsDataBaseTest
 import me.insiro.home.server.testUtils.DBInserter
 import me.insiro.home.server.user.entity.User
 import me.insiro.home.server.user.entity.Users
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -34,11 +35,9 @@ class PostServiceTest : AbsDataBaseTest(Users, Categories, Posts) {
     @Test
     fun `test insert Post and Get`() {
         //test Conflict
-        val newPost = NewPostDTO("newPost", null, "postContent")
-        val created = postService.createPost(newPost, user, null)
-        val found = postService.findPost(created.id!!)
-        assertNotNull(found)
-        found!!
+        val newPost = NewPostDTO("newPost", null, "postContent", status = null)
+        val created = postService.createPost(newPost, user, null).getOrThrow()
+        val found = postService.findPost(created.id!!).getOrThrow()
         assertEquals(newPost.title, found.title)
         assertEquals(newPost.status, found.status)
     }
@@ -47,9 +46,8 @@ class PostServiceTest : AbsDataBaseTest(Users, Categories, Posts) {
     fun updatePost() {
         val cate2 = DBInserter.insertCategory(Category("testCate2"))
         val updatePostDTO = UpdatePostDTO("newTitle", category = cate2.name)
-        val updated = postService.updatePost(post.id!!, updatePostDTO, cate2.id, user)
-        assertNotNull(updated)
-        assertEquals(cate2.id, updated!!.categoryId)
+        val updated = postService.updatePost(post.id!!, updatePostDTO, cate2.id, user).getOrThrow()
+        assertEquals(cate2.id, updated.categoryId)
         assertEquals(updatePostDTO.title, updated.title)
     }
 

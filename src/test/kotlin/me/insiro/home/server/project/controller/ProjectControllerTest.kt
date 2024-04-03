@@ -66,7 +66,7 @@ class ProjectControllerTest : AbsControllerTest("projects") {
         val newDTO = NewProjectDTO(project.title, project.status, "content", project.types?.map { it.name })
         val dtoPart = MockPart("data", gson.toJson(newDTO).toByteArray())
         dtoPart.headers.contentType = MediaType.APPLICATION_JSON
-        Mockito.`when`(projectService.create(newDTO)).thenReturn(project)
+        Mockito.`when`(projectService.create(newDTO)).thenReturn(Result.success(project))
         mockMvc.perform(
             MockMvcRequestBuilders
                 .multipart(uri)
