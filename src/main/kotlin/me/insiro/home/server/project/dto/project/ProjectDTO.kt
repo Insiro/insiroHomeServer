@@ -9,12 +9,14 @@ data class ProjectDTO(
     val id: UUID,
     val status: Status,
     var type: List<ProjectType>? = null,
+    val content: String?
 ) {
-    constructor(project: Project) : this(
+    constructor(project: Project, content: String? = null) : this(
         project.id!!.value, project.status,
         when (project) {
             is Project.Joined -> project.types
             is Project.Raw -> null
-        }
+        },
+        content
     )
 }
