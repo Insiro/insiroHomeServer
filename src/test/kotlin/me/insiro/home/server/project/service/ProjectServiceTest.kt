@@ -39,10 +39,9 @@ class ProjectServiceTest : AbsDataBaseTest(Projects, ProjectTypes, ProjectTypeRe
     @Test
     fun `create new Project and Get Id`() {
         val dto = NewProjectDTO("title", Status.PUBLISHED, "content", arrayListOf("newType", "type"))
-        val id = projectService.create(dto).id!!
-        val result = projectService.get(id).getOrNull()
-        assertNotNull(result)
-        assertEquals(dto.title, result!!.title)
+        val id = projectService.create(dto).getOrThrow().id!!
+        val result = projectService.get(id).getOrThrow()
+        assertEquals(dto.title, result.title)
         assertEquals(dto.status, result.status)
         assertEquals(dto.types?.sorted(), result.types?.map { it.name }?.sorted())
         assertNotNull(result.createdAt)

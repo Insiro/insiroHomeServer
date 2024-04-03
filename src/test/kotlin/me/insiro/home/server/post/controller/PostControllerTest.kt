@@ -77,8 +77,8 @@ class PostControllerTest : AbsControllerTest("/posts") {
 
     @Test
     fun testGetPostById() {
-        Mockito.`when`(postService.findJoinedPost(post.id!!)).thenReturn(joinedPost)
-        Mockito.`when`(categoryService.findById(category.id!!)).thenReturn(category)
+        Mockito.`when`(postService.findJoinedPost(post.id!!)).thenReturn(Result.success(joinedPost))
+        Mockito.`when`(categoryService.findById(category.id!!)).thenReturn(Result.success(category))
         Mockito.`when`(commentService.findComments(post.id!!, null)).thenReturn(listOf(comment))
         mockMvc.perform(MockMvcRequestBuilders.get(uri(post.id!!)).queryParam("comment", "true"))
             .andExpect { status().isOk }
@@ -95,8 +95,8 @@ class PostControllerTest : AbsControllerTest("/posts") {
 
     @Test
     fun testDeletePostById() {
-        Mockito.`when`(postService.findPost(post.id!!)).thenReturn(post)
-        Mockito.`when`(postService.deletePost(post.id!!, detail.user)).thenReturn(true)
+        Mockito.`when`(postService.findPost(post.id!!)).thenReturn(Result.success(post))
+        Mockito.`when`(postService.deletePost(post.id!!, detail.user)).thenReturn(Result.success(true))
         Mockito.`when`(commentService.deleteCommentByPostId(post.id!!)).thenReturn(1)
         mockMvc.perform(MockMvcRequestBuilders.delete(uri(post.id!!))
             .apply {
@@ -113,8 +113,8 @@ class PostControllerTest : AbsControllerTest("/posts") {
         val updateDTO = UpdatePostDTO(category = cate2.name, status = updated.status)
         val dtoPart = MockPart("data", gson.toJson(updateDTO).toByteArray())
         dtoPart.headers.contentType = MediaType.APPLICATION_JSON
-        Mockito.`when`(postService.updatePost(post.id!!, updateDTO, cate2.id, user)).thenReturn(updated)
-        Mockito.`when`(categoryService.findByName(cate2.name)).thenReturn(cate2)
+        Mockito.`when`(postService.updatePost(post.id!!, updateDTO, cate2.id, user)).thenReturn(Result.success(updated))
+        Mockito.`when`(categoryService.findByName(cate2.name)).thenReturn(Result.success(cate2))
 
         mockMvc.perform(
             MockMvcRequestBuilders
@@ -135,9 +135,9 @@ class PostControllerTest : AbsControllerTest("/posts") {
 
     @Test
     fun testCreatePost() {
-        val createDTO = NewPostDTO(post.title, category.name, "New Post Content")
-        Mockito.`when`(categoryService.findByName(category.name)).thenReturn(category)
-        Mockito.`when`(postService.createPost(createDTO, user, category.id)).thenReturn(post)
+        val createDTO = NewPostDTO(post.title, category.name, "New Post Content", Status.PUBLISHED)
+        Mockito.`when`(categoryService.findByName(category.name)).thenReturn(Result.success(category))
+        Mockito.`when`(postService.createPost(createDTO, user, category.id)).thenReturn(Result.success(post))
         val dtoPart = MockPart("data", gson.toJson(createDTO).toByteArray())
         dtoPart.headers.contentType = MediaType.APPLICATION_JSON
         mockMvc.perform(

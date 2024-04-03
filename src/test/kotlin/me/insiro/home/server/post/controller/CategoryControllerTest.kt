@@ -46,7 +46,7 @@ class CategoryControllerTest : AbsControllerTest("/category") {
     @Test
     fun `update Category`() {
         val dto = ModifyCategoryDTO(category.name)
-        Mockito.`when`(categoryService.update(category.id!!, dto)).thenReturn(category)
+        Mockito.`when`(categoryService.update(category.id!!, dto)).thenReturn(Result.success(category))
         mockMvc.perform(
             MockMvcRequestBuilders.patch(uri(category.id!!))
                 .content(gson.toJson(dto))
@@ -59,7 +59,7 @@ class CategoryControllerTest : AbsControllerTest("/category") {
 
     @Test
     fun `get Category Info`() {
-        Mockito.`when`(categoryService.findByName(category.name)).thenReturn(category)
+        Mockito.`when`(categoryService.findByName(category.name)).thenReturn(Result.success(category))
         mockMvc.perform(MockMvcRequestBuilders.get(uri(category.name)))
             .andExpect { status().isOk }
             .andExpect { jsonPath("$.name").value(category.name) }
@@ -86,7 +86,7 @@ class CategoryControllerTest : AbsControllerTest("/category") {
                 Post.Id(UUID.randomUUID())
             )
         )
-        Mockito.`when`(categoryService.findByName(category.name)).thenReturn(category)
+        Mockito.`when`(categoryService.findByName(category.name)).thenReturn(Result.success(category))
         Mockito.`when`(postService.findJoinedPosts(category.id!!)).thenReturn(posts)
         mockMvc.perform(MockMvcRequestBuilders.post(uri(category.id!!, "posts")))
             .andExpect { status().isOk }
@@ -96,7 +96,7 @@ class CategoryControllerTest : AbsControllerTest("/category") {
 
     @Test
     fun `delete category`() {
-        Mockito.`when`(categoryService.delete(category.name)).thenReturn(category.id)
+        Mockito.`when`(categoryService.delete(category.name)).thenReturn(Result.success(category.id!!))
         mockMvc.perform(MockMvcRequestBuilders.delete(uri(category.id!!)))
             .andExpect { status().isOk }
     }
