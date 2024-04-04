@@ -1,11 +1,11 @@
 package me.insiro.home.server.application.config
 
+import me.insiro.home.server.application.utils.EnvProperties
 import me.insiro.home.server.user.UserRepository
 import me.insiro.home.server.user.entity.User
 import me.insiro.home.server.user.utils.PasswordEncoder
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.boot.CommandLineRunner
-import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Component
 
 @Component
@@ -37,9 +37,9 @@ class AdminInitializer(
     }
 }
 
-@ConfigurationProperties("app.admin")
+@EnvProperties("admin")
 data class AdminAccountProperties(
     var name: String = "administrator",
-    val password: String = "administrator",
-    val email: String = ""
+    var password: String = "administrator",
+    var email: String = ""
 )
