@@ -1,29 +1,37 @@
 package me.insiro.home.server.application.config.intialize
 
+import me.insiro.home.server.application.config.ApplicationOptions
 import me.insiro.home.server.user.UserRepository
 import me.insiro.home.server.user.entity.User
 import me.insiro.home.server.user.utils.PasswordEncoder
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.springframework.boot.CommandLineRunner
+import org.springframework.boot.ApplicationArguments
+import org.springframework.boot.ApplicationRunner
+import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 
 @Component
-class AdminInitializer(
+class ApplicationInitializer(
+    val option: ApplicationOptions,
+    val environment: Environment,
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder,
     private val adminProperties: AdminAccountProperties,
 ) :
-    CommandLineRunner {
+    ApplicationRunner {
+    override fun run(args: ApplicationArguments?) = transaction {
+        option.env = environment.activeProfiles[0]
+        val initOption = ApplicationInitializeOption()
+        args?.let {
+            initOption.resetAdmin = it.containsOption("resetAdmin")
+        }
 
-    override fun run(vararg args: String?) = transaction {
-        if ("resetAdmin" in args)
+        if (initOption.resetAdmin || userRepository.find(adminProperties.name) == null)
             resetAdmin()
-        if (userRepository.find(adminProperties.name) == null)
-            resetAdmin()
+        Unit
     }
 
     private fun resetAdmin() {
-
         val newUser =
             User(
                 adminProperties.name,
@@ -34,4 +42,5 @@ class AdminInitializer(
             )
         userRepository.upsertById(newUser)
     }
+
 }

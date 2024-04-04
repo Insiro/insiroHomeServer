@@ -1,6 +1,6 @@
 package me.insiro.home.server.application.config
 
-import me.insiro.home.server.application.utils.EnvProperties
+import org.springframework.stereotype.Component
 
-@EnvProperties("app")
-data class ApplicationOptions(var mode:String="")
+@Component
+data class ApplicationOptions(var env: String = "dev")
