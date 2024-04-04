@@ -1,6 +1,5 @@
-package me.insiro.home.server.application.config
+package me.insiro.home.server.application.config.intialize
 
-import me.insiro.home.server.application.utils.EnvProperties
 import me.insiro.home.server.user.UserRepository
 import me.insiro.home.server.user.entity.User
 import me.insiro.home.server.user.utils.PasswordEncoder
@@ -36,10 +35,3 @@ class AdminInitializer(
         userRepository.upsertById(newUser)
     }
 }
-
-@EnvProperties("admin")
-data class AdminAccountProperties(
-    var name: String = "administrator",
-    var password: String = "administrator",
-    var email: String = ""
-)
