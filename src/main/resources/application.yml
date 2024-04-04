@@ -1,11 +1,13 @@
 spring:
+  profiles:
+    default: dev
   config:
-    import: "file:./data/env.yml"
+    import: "file:./data/${spring.profiles.active}.env.yml"
   datasource:
     url: ${DB.url}
     username: ${DB.username}
     password: ${DB.password}
-    driver-class-name: org.h2.Driver
+    driver-class-name: ${DB.driver}
   exposed:
     generate-ddl: true
 server:

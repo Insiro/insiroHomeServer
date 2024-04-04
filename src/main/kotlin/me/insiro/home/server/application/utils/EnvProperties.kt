@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 @Retention(AnnotationRetention.RUNTIME)
 @Component
 @ConfigurationProperties(prefix = "")
-@PropertySource("file:./data/env.yml")
+@PropertySource("file:./data/\${spring.profiles.active:default}.env.yml")
 annotation class EnvProperties(
     val prefix: String,
 )
