@@ -17,13 +17,15 @@ data class PostResponseDTO(
     val category: CategoryDTO?,
     val status: Status,
     override val createdAt: LocalDateTime,
-    val comments: List<CommentDTO>?
+    val comments: List<CommentDTO>?,
+    val content:String?
 ) : IResponseDTO<UUID> {
     constructor(
         post: Post.Raw,
         author: SimpleUserDTO,
         category: CategoryDTO? = null,
-        comments: List<CommentDTO>? = null
+        comments: List<CommentDTO>? = null,
+        content:String?=null
     ) : this(
         post.id!!.value,
         post.title,
@@ -32,9 +34,10 @@ data class PostResponseDTO(
         post.status,
         post.createdAt!!,
         comments = comments,
+        content= content
     )
 
-    constructor(post: Post.Joined, comments: List<CommentDTO>? = null) : this(
+    constructor(post: Post.Joined, comments: List<CommentDTO>? = null, content:String?=null) : this(
         post.id!!.value,
         post.title,
         SimpleUserDTO(post.author.id.value, post.author.name),
@@ -42,5 +45,6 @@ data class PostResponseDTO(
         post.status,
         post.createdAt!!,
         comments = comments,
+        content= content
     )
 }

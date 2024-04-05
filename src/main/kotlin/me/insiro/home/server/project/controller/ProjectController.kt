@@ -41,13 +41,14 @@ class ProjectController(
     ): ResponseEntity<ProjectDTO> {
         val project = projectService.create(newProjectDTO).getOrThrow()
         fileService.create(project, newProjectDTO.content, files)
-        return ResponseEntity(ProjectDTO(project), HttpStatus.CREATED)
+        return ResponseEntity(ProjectDTO(project, content = newProjectDTO.content), HttpStatus.CREATED)
     }
 
     @GetMapping("{id}")
     fun getProjectById(@PathVariable id: Project.Id): ResponseEntity<ProjectDTO> {
-        val project = ProjectDTO(projectService.get(id).getOrThrow())
-        return ResponseEntity(project, HttpStatus.OK)
+        val project = projectService.get(id).getOrThrow()
+        val loaded = fileService.get(vo=project, load = true)
+        return ResponseEntity(ProjectDTO(project, loaded?.content), HttpStatus.OK)
     }
 
     @Secured("ROLE_ADMIN")

@@ -4,6 +4,7 @@ import me.insiro.home.server.application.domain.entity.Status
 import me.insiro.home.server.post.dto.comment.ModifierDTO
 import me.insiro.home.server.post.dto.comment.ModifyCommentDTO
 import me.insiro.home.server.post.entity.*
+import me.insiro.home.server.post.exception.comment.CommentNotFoundException
 import me.insiro.home.server.post.repository.CommentRepository
 import me.insiro.home.server.testUtils.AbsDataBaseTest
 import me.insiro.home.server.testUtils.DBInserter
@@ -15,6 +16,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class CommentServiceTest : AbsDataBaseTest(Users, Categories, Posts, Comments) {
     private val passwordEncoder = PasswordEncoder()
@@ -46,7 +48,7 @@ class CommentServiceTest : AbsDataBaseTest(Users, Categories, Posts, Comments) {
     @Test
     fun deleteComment() {
         val modifier = ModifierDTO.Signed()
-        assertTrue(commentService.deleteComment(comment.id!!, modifier, user))
+        assertTrue(commentService.deleteComment(comment.id!!, modifier, user).getOrThrow())
         val nComment = transaction {
             Comments.selectAll().where { Comments.id eq comment.id!!.value }.count()
         }
@@ -55,9 +57,8 @@ class CommentServiceTest : AbsDataBaseTest(Users, Categories, Posts, Comments) {
 
     @Test
     fun getCommentById() {
-        val found = commentService.getComment(comment.id!!)
-        assertNotNull(found)
-        assertEquals(comment.id, found!!.id)
+        val found = commentService.getComment(comment.id!!).getOrThrow()
+        assertEquals(comment.id, found.id)
         assertEquals(comment.author, found.author)
         assertEquals(comment.postId, found.postId)
         assertEquals(comment.content, found.content)
@@ -72,10 +73,10 @@ class CommentServiceTest : AbsDataBaseTest(Users, Categories, Posts, Comments) {
             updateDTO,
             user
         )
-        assertNull(wrongIdUpdated)
+        assertThrows<CommentNotFoundException>{wrongIdUpdated.getOrThrow()}
         val updated = commentService.updateComment(comment.id!!, updateDTO, user)
         assertNotNull(updated)
-        assertEquals(updateDTO.content, updated!!.content)
+        assertEquals(updateDTO.content, updated.getOrNull()!!.content)
     }
 
     @Test
@@ -91,10 +92,9 @@ class CommentServiceTest : AbsDataBaseTest(Users, Categories, Posts, Comments) {
         )
 
         val updateDTO = ModifyCommentDTO.Anonymous("commentUpdated", "testUser", pwd)
-        val updated = commentService.updateComment(comment.id!!, updateDTO)
+        val updated = commentService.updateComment(comment.id!!, updateDTO).getOrThrow()
 
-        assertNotNull(updated)
-        assertTrue(updated!!.author is CommentUserInfo.Anonymous)
+        assertTrue(updated.author is CommentUserInfo.Anonymous)
         val updatedUser = updated.author as CommentUserInfo.Anonymous
         assertTrue(passwordEncoder.matches(pwd, updatedUser.pwd))
         assertEquals(updateDTO.name, updatedUser.name)

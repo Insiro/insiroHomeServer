@@ -1,12 +1,12 @@
 package me.insiro.home.server.file.config
 
-import org.springframework.boot.context.properties.ConfigurationProperties
+import me.insiro.home.server.application.utils.EnvProperties
 
 
-@ConfigurationProperties("app.files")
+@EnvProperties("files")
 data class FileConfigProperties(
     var storage: FileStorage? = FileStorage.None,
-    val location: String = ""
+    var location: String = "./data/static"
 ) {
     enum class FileStorage {
         Local, None

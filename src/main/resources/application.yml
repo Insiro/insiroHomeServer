@@ -1,21 +1,13 @@
 spring:
   config:
-    import: "classpath:env.yml"
+    import: "file:./data/${spring.profiles.active:dev}.env.yml"
   datasource:
     url: ${DB.url}
     username: ${DB.username}
     password: ${DB.password}
-    driver-class-name: org.h2.Driver
+    driver-class-name: ${DB.driver}
   exposed:
     generate-ddl: true
 server:
   error:
     include-stacktrace: never
-app:
-  files:
-    storage: ${files.storage}
-    location: ${files.location}
-  admin:
-    name: ${admin.name}
-    password: ${admin.password}
-    email: ${admin.email}

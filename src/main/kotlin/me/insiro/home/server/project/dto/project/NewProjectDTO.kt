@@ -8,5 +8,5 @@ data class NewProjectDTO(
     val status: Status?,
     val content: String,
     val types: List<String>?,
-    val id: Project.Id? // Create With Specified ID
+    val id: Project.Id? = null// Create With Specified ID
 )

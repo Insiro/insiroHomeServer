@@ -54,7 +54,7 @@ class PostController(
         fileService.create(post, newPostDTO.content, files)
 
         return ResponseEntity(
-            PostResponseDTO(post, SimpleUserDTO(user), category?.let { CategoryDTO(it) }),
+            PostResponseDTO(post, SimpleUserDTO(user), category?.let { CategoryDTO(it) }, content = newPostDTO.content),
             HttpStatus.CREATED
         )
     }
@@ -70,8 +70,8 @@ class PostController(
         val offsetLimit = limit?.let { OffsetLimit(offset, limit) }
         val post = postService.findJoinedPost(id).getOrThrow()
         val comments = commentService.findComments(id, offsetLimit).map { CommentDTO(it) }
-
-        return ResponseEntity(PostResponseDTO(post, comments), HttpStatus.OK)
+        val content = fileService.get(post, true)?.content
+        return ResponseEntity(PostResponseDTO(post, comments, content = content), HttpStatus.OK)
     }
 
     @Secured("ROLE_WRITER")
