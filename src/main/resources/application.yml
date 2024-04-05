@@ -1,8 +1,6 @@
 spring:
-  profiles:
-    default: dev
   config:
-    import: "file:./data/${spring.profiles.active}.env.yml"
+    import: "file:./data/${spring.profiles.active:dev}.env.yml"
   datasource:
     url: ${DB.url}
     username: ${DB.username}

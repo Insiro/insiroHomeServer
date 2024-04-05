@@ -20,7 +20,8 @@ class ApplicationInitializer(
 ) :
     ApplicationRunner {
     override fun run(args: ApplicationArguments?) = transaction {
-        option.env = environment.activeProfiles[0]
+        val profile = environment.activeProfiles
+        option.env =  if(profile.isNotEmpty())profile[0]  else "default"
         val initOption = ApplicationInitializeOption()
         args?.let {
             initOption.resetAdmin = it.containsOption("resetAdmin")
