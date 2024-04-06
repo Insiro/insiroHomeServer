@@ -37,6 +37,15 @@ abstract class AbsFileService<VO : IEntityVO<*>>(
         return if (load) repository.load(textFileItem) else repository.get(textFileItem)
     }
 
+    fun existIcon(vo: VO): Boolean {
+        return existIcon(collectionName(vo))
+    }
+
+    protected fun existIcon(collection: String): Boolean {
+        val iconFile = VOFileItem(domain, collection, "index.png")
+        return repository.exist(iconFile)
+    }
+
     protected fun get(collection: String, item: String): IFileItem? {
         return repository.get(VOFileItem(domain, collection, item))
     }
@@ -70,15 +79,16 @@ abstract class AbsFileService<VO : IEntityVO<*>>(
         return find(collectionName(vo))
     }
 
-    protected fun update(item: VOTextFileItem, delete: List<String>?, create: List<MultipartFile>?) {
-        repository.save(item)
+    protected fun update(item: VOTextFileItem, delete: List<String>?, create: List<MultipartFile>?): String? {
+        val content = repository.save(item).content
         delete?.forEach { repository.delete(VOFileItem(item, it)) }
         create?.forEach { repository.addItem(item, it) }
+        return content
     }
 
 
-    fun update(vo: VO, modifyDTO: IModifyFileDTO, files: List<MultipartFile>?) {
-        update(VOTextFileItem(domain, collectionName(vo), "index.md"), modifyDTO.deletedFileNames, files)
+    fun update(vo: VO, modifyDTO: IModifyFileDTO, files: List<MultipartFile>?): String? {
+        return update(VOTextFileItem(domain, collectionName(vo), "index.md"), modifyDTO.deletedFileNames, files)
     }
 
 

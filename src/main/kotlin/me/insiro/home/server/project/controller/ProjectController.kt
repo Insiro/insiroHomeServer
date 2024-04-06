@@ -29,7 +29,8 @@ class ProjectController(
         @RequestParam(required = false) status: List<Status> = listOf(Status.PUBLISHED),
     ): ResponseEntity<List<ProjectDTO>> {
         val offsetLimit = limit?.let { OffsetLimit(offset, limit) }
-        val projects = projectService.findJoined(filterOption = status, offsetLimit = offsetLimit).map(::ProjectDTO)
+        val projects = projectService.findJoined(filterOption = status, offsetLimit = offsetLimit)
+            .map { ProjectDTO(it, icon = fileService.existIcon(it)) }
         return ResponseEntity(projects, HttpStatus.OK)
     }
 
@@ -41,14 +42,16 @@ class ProjectController(
     ): ResponseEntity<ProjectDTO> {
         val project = projectService.create(newProjectDTO).getOrThrow()
         fileService.create(project, newProjectDTO.content, files)
-        return ResponseEntity(ProjectDTO(project, content = newProjectDTO.content), HttpStatus.CREATED)
+        val existIcon = fileService.existIcon(project)
+        return ResponseEntity(ProjectDTO(project, content = newProjectDTO.content, existIcon), HttpStatus.CREATED)
     }
 
     @GetMapping("{id}")
     fun getProjectById(@PathVariable id: Project.Id): ResponseEntity<ProjectDTO> {
         val project = projectService.get(id).getOrThrow()
-        val loaded = fileService.get(vo=project, load = true)
-        return ResponseEntity(ProjectDTO(project, loaded?.content), HttpStatus.OK)
+        val loaded = fileService.get(vo = project, load = true)
+        val icon = fileService.existIcon(project)
+        return ResponseEntity(ProjectDTO(project, loaded?.content, icon), HttpStatus.OK)
     }
 
     @Secured("ROLE_ADMIN")
@@ -60,7 +63,8 @@ class ProjectController(
     ): ResponseEntity<ProjectDTO> {
         val project = projectService.update(id, updateDTO)
         fileService.update(project, updateDTO, files)
-        return ResponseEntity(ProjectDTO(project), HttpStatus.OK)
+        val icon = fileService.existIcon(project)
+        return ResponseEntity(ProjectDTO(project,  icon = icon), HttpStatus.OK)
     }
 
     @Secured("ROLE_ADMIN")

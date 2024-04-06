@@ -11,14 +11,17 @@ interface IFileRepository {
 
     //over collection
     fun find(collection: IFileCollection): List<IFileItem>
+    fun exist(fileVO: IFileItem): Boolean
 
     fun get(fileVO: IFileItem): IFileItem?
+
+
     fun get(fileVO: VOTextFileItem): VOTextFileItem?
     //by item
     fun load(fileVO: VOTextFileItem): VOTextFileItem?
     fun save(fileVO: IFileItem, data: Any): IFileItem {
         return when (fileVO) {
-            is VOFileItem -> TODO()
+            is VOFileItem -> save(fileVO, data as ByteArray)
             is VOMediaFileItem -> {
                 save(fileVO, data as MultipartFile)
             }
@@ -28,6 +31,7 @@ interface IFileRepository {
             }
         }
     }
+    fun save(fileVO: VOFileItem, data: ByteArray): VOFileItem
 
     fun save(textVO: VOTextFileItem): VOTextFileItem {
         return save(textVO, textVO.content ?: "")

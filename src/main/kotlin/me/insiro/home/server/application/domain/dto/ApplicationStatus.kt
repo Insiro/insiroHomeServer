@@ -1,4 +1,4 @@
-package me.insiro.home.server.application.dto
+package me.insiro.home.server.application.domain.dto
 
 import me.insiro.home.server.application.config.ApplicationOptions
 

@@ -51,6 +51,10 @@ class StaticFileRepository(override val location: String) : IFileRepository {
     }
 
     //by item
+    override fun exist(fileVO: IFileItem): Boolean {
+        return path(fileVO).toFile().isFile.not()
+    }
+
     override fun get(fileVO: IFileItem): IFileItem? {
         val file = path(fileVO).toFile()
         if (file.isFile.not()) return null
@@ -68,6 +72,16 @@ class StaticFileRepository(override val location: String) : IFileRepository {
         if (file.isFile.not())
             return null
         return fileVO.copy(content = file.readText())
+    }
+
+    override fun save(fileVO: VOFileItem, data: ByteArray): VOFileItem {
+        val filePath = path(fileVO)
+        val file = filePath.toFile()
+        if (file.isFile)
+            file.delete()
+        file.createNewFile()
+        file.writeBytes(data)
+        return fileVO
     }
 
     override fun save(textVO: VOTextFileItem, data: String): VOTextFileItem {
@@ -112,8 +126,8 @@ class StaticFileRepository(override val location: String) : IFileRepository {
         val filePath = path(textVO)
         if (filePath.parent.notExists())
             return null
-        val fineName = data.originalFilename?:return null
-        val fileVO = FileItemFactory.new(textVO,  fineName)
+        val fineName = data.originalFilename ?: return null
+        val fileVO = FileItemFactory.new(textVO, fineName)
 
         data.transferTo(path(fileVO).toFile())
         return fileVO
