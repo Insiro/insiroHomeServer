@@ -9,12 +9,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
     JsonSubTypes.Type(value = ModifierDTO.Anonymous::class, name = "anonymous")
 )
 sealed interface ModifierDTO {
-    interface ISigned : ModifierDTO
-    interface IAnonymous : ModifierDTO {
-        val name: String
-        val password: String
-    }
-
-    open class Signed : ISigned
-    data class Anonymous(override val name: String, override val password: String) : IAnonymous
+    open class Signed : ModifierDTO
+    data class Anonymous( val name: String,  val password: String) : ModifierDTO
 }
