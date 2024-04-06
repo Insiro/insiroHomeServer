@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.web.cors.CorsConfiguration
 
 @Configuration
 @EnableWebSecurity
@@ -25,6 +26,17 @@ class SecurityConfig(
                 .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) }
                 .userDetailsService(userService).authenticationProvider(authenticateProvider)
                 .csrf { it.disable() }
+            .cors {
+                it.configurationSource {
+                    val config = CorsConfiguration()
+                    val allowAll = listOf("*")
+                    config.allowedHeaders = allowAll
+                    config.allowedMethods = allowAll
+                    config.allowCredentials = true
+                    config.allowedOrigins = listOf("localhost:*")
+                    config
+                }
+            }
                 .authorizeHttpRequests {
                     it.requestMatchers("/**").permitAll().anyRequest().authenticated()
                 }
