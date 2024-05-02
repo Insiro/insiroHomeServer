@@ -37,13 +37,15 @@ abstract class AbsFileService<VO : IEntityVO<*>>(
         return if (load) repository.load(textFileItem) else repository.get(textFileItem)
     }
 
-    fun existIcon(vo: VO): Boolean {
-        return existIcon(collectionName(vo))
+    fun iconPath(vo: VO): String? {
+        return iconPath(collectionName(vo))
     }
 
-    protected fun existIcon(collection: String): Boolean {
+    private fun iconPath(collection: String): String? {
         val iconFile = VOFileItem(domain, collection, "index.png")
-        return repository.exist(iconFile)
+        if (repository.exist(iconFile))
+            return "static/${domain}/${collection}/icon.png"
+        return null
     }
 
     protected fun get(collection: String, item: String): IFileItem? {

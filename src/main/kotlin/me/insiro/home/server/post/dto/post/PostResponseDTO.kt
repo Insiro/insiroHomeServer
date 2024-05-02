@@ -21,7 +21,7 @@ data class PostResponseDTO(
     override val createdAt: LocalDateTime,
     val comments: List<CommentDTO>?,
     val content: String?,
-    override val icon: Boolean = false
+    override val icon: String? = null
 ) : IResponseDTO<UUID>, IFileIcon {
     constructor(
         post: Post.Raw,
@@ -29,7 +29,7 @@ data class PostResponseDTO(
         content: String?,
         category: CategoryDTO? = null,
         comments: List<CommentDTO>? = null,
-        icon: Boolean = false
+        icon: String? = null
     ) : this(
         post.id!!.value,
         post.title,
@@ -42,7 +42,7 @@ data class PostResponseDTO(
         icon
     )
 
-    constructor(post: Post.Joined, content: String?, comments: List<CommentDTO>? = null, icon: Boolean) : this(
+    constructor(post: Post.Joined, content: String?, comments: List<CommentDTO>? = null, icon: String?=null) : this(
         post.id!!.value,
         post.title,
         SimpleUserDTO(post.author.id.value, post.author.name),

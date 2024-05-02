@@ -15,9 +15,9 @@ data class ProjectDTO(
     var type: List<ProjectType>? = null,
     override val createdAt: LocalDateTime?,
     val content: String?,
-    override var icon: Boolean = false
+    override var icon: String? = null
 ) : IFileIcon, IResponseDTO<UUID> {
-    constructor(project: Project, content: String? = null, icon: Boolean = false) : this(
+    constructor(project: Project, content: String? = null, icon: String? = null) : this(
         project.id!!.value, project.title, project.status,
         when (project) {
             is Project.Joined -> project.types

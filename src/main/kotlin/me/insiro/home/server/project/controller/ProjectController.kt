@@ -30,7 +30,7 @@ class ProjectController(
     ): ResponseEntity<List<ProjectDTO>> {
         val offsetLimit = limit?.let { OffsetLimit(offset, limit) }
         val projects = projectService.findJoined(filterOption = status, offsetLimit = offsetLimit)
-            .map { ProjectDTO(it, icon = fileService.existIcon(it)) }
+            .map { ProjectDTO(it, icon = fileService.iconPath(it)) }
         return ResponseEntity(projects, HttpStatus.OK)
     }
 
@@ -42,15 +42,15 @@ class ProjectController(
     ): ResponseEntity<ProjectDTO> {
         val project = projectService.create(newProjectDTO).getOrThrow()
         fileService.create(project, newProjectDTO.content, files)
-        val existIcon = fileService.existIcon(project)
-        return ResponseEntity(ProjectDTO(project, content = newProjectDTO.content, existIcon), HttpStatus.CREATED)
+        val icon = fileService.iconPath(project)
+        return ResponseEntity(ProjectDTO(project, content = newProjectDTO.content, icon), HttpStatus.CREATED)
     }
 
     @GetMapping("{id}")
     fun getProjectById(@PathVariable id: Project.Id): ResponseEntity<ProjectDTO> {
         val project = projectService.get(id).getOrThrow()
         val loaded = fileService.get(vo = project, load = true)
-        val icon = fileService.existIcon(project)
+        val icon = fileService.iconPath(project)
         return ResponseEntity(ProjectDTO(project, loaded?.content, icon), HttpStatus.OK)
     }
 
@@ -63,7 +63,7 @@ class ProjectController(
     ): ResponseEntity<ProjectDTO> {
         val project = projectService.update(id, updateDTO)
         fileService.update(project, updateDTO, files)
-        val icon = fileService.existIcon(project)
+        val icon = fileService.iconPath(project)
         return ResponseEntity(ProjectDTO(project,  icon = icon), HttpStatus.OK)
     }
 

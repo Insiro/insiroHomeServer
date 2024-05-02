@@ -38,7 +38,7 @@ class PostController(
     ): ResponseEntity<List<PostResponseDTO>> {
         val offsetLimit = limit?.let { OffsetLimit(offset, limit) }
         val posts = postService.findJoinedPosts(status = status, offsetLimit = offsetLimit)
-            .map { PostResponseDTO(it, icon = fileService.existIcon(it), content = null) }
+            .map { PostResponseDTO(it, icon = fileService.iconPath(it), content = null) }
         return ResponseEntity(posts, HttpStatus.OK)
     }
 
@@ -58,7 +58,7 @@ class PostController(
             SimpleUserDTO(user),
             content = newPostDTO.content,
             category?.let { CategoryDTO(it) },
-            icon = fileService.existIcon(post)
+            icon = fileService.iconPath(post)
         )
         return ResponseEntity(dto, HttpStatus.CREATED)
     }
@@ -77,7 +77,7 @@ class PostController(
             post,
             comments = commentService.findComments(id, offsetLimit).map { CommentDTO(it) },
             content = fileService.get(post, true)?.content,
-            icon = fileService.existIcon(post)
+            icon = fileService.iconPath(post)
         )
         return ResponseEntity(dto, HttpStatus.OK)
     }
@@ -98,7 +98,7 @@ class PostController(
             SimpleUserDTO(user),
             fileService.update(post, updateDTO, files),
             category?.let { CategoryDTO(it) },
-            icon = fileService.existIcon(post)
+            icon = fileService.iconPath(post)
         )
         return ResponseEntity(dto, HttpStatus.OK)
     }
@@ -145,7 +145,7 @@ class PostController(
         val category = categoryService.findByName(categoryName).getOrThrow()
         val offsetLimit = limit?.let { OffsetLimit(offset, limit) }
         val posts = postService.findJoinedPosts(category.id, status, offsetLimit)
-            .map { PostResponseDTO(it, content = null, icon = fileService.existIcon(it)) }
+            .map { PostResponseDTO(it, content = null, icon = fileService.iconPath(it)) }
         return ResponseEntity(posts, HttpStatus.OK)
     }
 

@@ -2,5 +2,5 @@ package me.insiro.home.server.application.domain.dto
 
 
 interface IFileIcon {
-    val icon: Boolean
+    val icon: String?
 }
