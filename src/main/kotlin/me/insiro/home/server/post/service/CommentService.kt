@@ -24,7 +24,7 @@ class CommentService(
         assert(comment.id != null)
         when (val author = comment.author) {
             is CommentUserInfo.Anonymous -> {
-                val info = modifyDTO as ModifierDTO.IAnonymous
+                val info = modifyDTO as ModifierDTO.Anonymous
                 if (author.name != info.name && passwordEncoder.matches(info.password, author.pwd))
                     return Result.failure(CommentModifyForbiddenException(comment.id!!, author.name))
             }
@@ -37,22 +37,22 @@ class CommentService(
         return Result.success(Unit)
     }
 
-    private fun createUserInfo(commentDTO: ModifyCommentDTO, user: User?): CommentUserInfo {
+    private fun createUserInfo(commentDTO: ModifierDTO, user: User?): CommentUserInfo {
         return when (commentDTO) {
-            is ModifyCommentDTO.Anonymous -> CommentUserInfo.Anonymous(
+            is ModifierDTO.Anonymous -> CommentUserInfo.Anonymous(
                 commentDTO.name,
                 passwordEncoder.encode(commentDTO.password)
             )
 
-            is ModifyCommentDTO.Signed -> user?.let { CommentUserInfo.UserInfo(user) } ?: throw UnAuthorizedException()
+            is ModifierDTO.Signed -> user?.let { CommentUserInfo.UserInfo(user) } ?: throw UnAuthorizedException()
         }
     }
 
     fun updateComment(id: Comment.Id, updateDto: ModifyCommentDTO, user: User? = null): Result<Comment> {
-        assert(user != null || updateDto is ModifyCommentDTO.Anonymous)
+        assert(user != null || updateDto.user is ModifierDTO.Anonymous)
         // check not found
         val comment = getComment(id).getOrElse { return Result.failure(it) }
-        validateModify(comment, updateDto, user).getOrElse { return Result.failure(it) }
+        validateModify(comment, updateDto.user, user).getOrElse { return Result.failure(it) }
 
         val updated = commentRepository.update(comment.copy(content = updateDto.content))
         return Result.success(updated)
@@ -78,15 +78,15 @@ class CommentService(
 
 
     fun addComment(postId: Post.Id, commentDTO: ModifyCommentDTO, user: User? = null): Comment {
-        assert(user != null || commentDTO is ModifyCommentDTO.Anonymous)
-        val authorInfo = createUserInfo(commentDTO, user)
+        assert(user != null || commentDTO.user is ModifierDTO.Anonymous)
+        val authorInfo = createUserInfo(commentDTO.user, user)
         val comment = Comment(commentDTO.content, postId, null, authorInfo)
         return commentRepository.new(comment)
     }
 
     fun appendComment(parent: Comment, commentDTO: ModifyCommentDTO, user: User? = null): Comment {
-        assert(user != null || commentDTO is ModifyCommentDTO.Anonymous)
-        val authorInfo = createUserInfo(commentDTO, user)
+        assert(user != null || commentDTO.user is ModifierDTO.Anonymous)
+        val authorInfo = createUserInfo(commentDTO.user, user)
         val comment = Comment(commentDTO.content, parent.postId, parent.id, authorInfo)
         return commentRepository.new(comment)
     }

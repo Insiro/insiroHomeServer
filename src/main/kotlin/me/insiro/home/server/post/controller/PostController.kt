@@ -37,7 +37,8 @@ class PostController(
         @RequestParam(required = false) status: List<Status> = arrayListOf(Status.PUBLISHED)
     ): ResponseEntity<List<PostResponseDTO>> {
         val offsetLimit = limit?.let { OffsetLimit(offset, limit) }
-        val posts = postService.findJoinedPosts(status = status, offsetLimit = offsetLimit).map { PostResponseDTO(it) }
+        val posts = postService.findJoinedPosts(status = status, offsetLimit = offsetLimit)
+            .map { PostResponseDTO(it, icon = fileService.iconPath(it), content = null) }
         return ResponseEntity(posts, HttpStatus.OK)
     }
 
@@ -52,11 +53,14 @@ class PostController(
         val post = postService.createPost(newPostDTO, user, category?.id).getOrThrow()
 
         fileService.create(post, newPostDTO.content, files)
-
-        return ResponseEntity(
-            PostResponseDTO(post, SimpleUserDTO(user), category?.let { CategoryDTO(it) }, content = newPostDTO.content),
-            HttpStatus.CREATED
+        val dto = PostResponseDTO(
+            post,
+            SimpleUserDTO(user),
+            content = newPostDTO.content,
+            category?.let { CategoryDTO(it) },
+            icon = fileService.iconPath(post)
         )
+        return ResponseEntity(dto, HttpStatus.CREATED)
     }
 
 
@@ -69,9 +73,13 @@ class PostController(
     ): ResponseEntity<PostResponseDTO> {
         val offsetLimit = limit?.let { OffsetLimit(offset, limit) }
         val post = postService.findJoinedPost(id).getOrThrow()
-        val comments = commentService.findComments(id, offsetLimit).map { CommentDTO(it) }
-        val content = fileService.get(post, true)?.content
-        return ResponseEntity(PostResponseDTO(post, comments, content = content), HttpStatus.OK)
+        val dto = PostResponseDTO(
+            post,
+            comments = commentService.findComments(id, offsetLimit).map { CommentDTO(it) },
+            content = fileService.get(post, true)?.content,
+            icon = fileService.iconPath(post)
+        )
+        return ResponseEntity(dto, HttpStatus.OK)
     }
 
     @Secured("ROLE_WRITER")
@@ -84,11 +92,15 @@ class PostController(
         val category = updateDTO.category?.let { categoryService.findByName(it).getOrThrow() }
         val user = getSignedUser().getOrThrow()
         val post = postService.updatePost(id, updateDTO, category?.id, user).getOrThrow()
-        fileService.update(post, updateDTO, files)
-        return ResponseEntity(
-            PostResponseDTO(post, SimpleUserDTO(user), category?.let { CategoryDTO(it) }),
-            HttpStatus.OK
+
+        val dto = PostResponseDTO(
+            post,
+            SimpleUserDTO(user),
+            fileService.update(post, updateDTO, files),
+            category?.let { CategoryDTO(it) },
+            icon = fileService.iconPath(post)
         )
+        return ResponseEntity(dto, HttpStatus.OK)
     }
 
     @DeleteMapping("{id}")
@@ -132,7 +144,8 @@ class PostController(
     ): ResponseEntity<List<PostResponseDTO>> {
         val category = categoryService.findByName(categoryName).getOrThrow()
         val offsetLimit = limit?.let { OffsetLimit(offset, limit) }
-        val posts = postService.findJoinedPosts(category.id, status, offsetLimit).map { PostResponseDTO(it) }
+        val posts = postService.findJoinedPosts(category.id, status, offsetLimit)
+            .map { PostResponseDTO(it, content = null, icon = fileService.iconPath(it)) }
         return ResponseEntity(posts, HttpStatus.OK)
     }
 

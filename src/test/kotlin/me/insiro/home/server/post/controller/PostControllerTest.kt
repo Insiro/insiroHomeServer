@@ -2,6 +2,7 @@ package me.insiro.home.server.post.controller
 
 import me.insiro.home.server.application.domain.entity.Status
 import me.insiro.home.server.file.service.PostFileService
+import me.insiro.home.server.post.dto.comment.ModifierDTO
 import me.insiro.home.server.post.dto.comment.ModifyCommentDTO
 import me.insiro.home.server.post.dto.post.NewPostDTO
 import me.insiro.home.server.post.dto.post.UpdatePostDTO
@@ -42,7 +43,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
     private val commentService = mock(CommentService::class.java)
     private val postFileService = mock(PostFileService::class.java)
     private val user = User("testUser", "", "testEmail", 0b1, id = User.Id(1), LocalDateTime.now())
-    private val category = Category("Default", Category.Id(0), LocalDateTime.now())
+    private val category = Category("DEFAULT", Category.Id(0), LocalDateTime.now())
     private val post =
         Post.Raw(
             "testPost",
@@ -160,7 +161,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
 
     @Test
     fun `test add comment with signed user`() {
-        val signedDTO = ModifyCommentDTO.Signed("content")
+        val signedDTO = ModifyCommentDTO("content", ModifierDTO.Signed())
         Mockito.`when`(commentService.addComment(post.id!!, signedDTO, user)).thenReturn(comment)
         mockMvc.perform(
             MockMvcRequestBuilders.post(uri(post.id!!, "comments"))
@@ -181,12 +182,13 @@ class PostControllerTest : AbsControllerTest("/posts") {
 
     @Test
     fun `test add comment with anonymous user`() {
-        val anonymousDTO = ModifyCommentDTO.Anonymous("content", "testAnonymous", "testPwd")
+        val modifierDTO = ModifierDTO.Anonymous("testAnonymous", "testPwd")
+        val anonymousDTO = ModifyCommentDTO("content", modifierDTO)
         val anonymousComment = Comment(
             anonymousDTO.content,
             post.id!!,
             null,
-            CommentUserInfo.Anonymous(anonymousDTO.name, anonymousDTO.password),
+            CommentUserInfo.Anonymous(modifierDTO.name, modifierDTO.password),
             createdAt = LocalDateTime.now(),
             id = Comment.Id(2)
         )

@@ -1,7 +1,9 @@
 package me.insiro.home.server.post.dto.post
 
+import me.insiro.home.server.application.domain.dto.IFileIcon
 import me.insiro.home.server.application.domain.dto.IResponseDTO
 import me.insiro.home.server.application.domain.entity.Status
+import me.insiro.home.server.file.vo.IFileItem
 import me.insiro.home.server.post.dto.category.CategoryDTO
 import me.insiro.home.server.post.dto.comment.CommentDTO
 import me.insiro.home.server.post.entity.Post
@@ -18,14 +20,16 @@ data class PostResponseDTO(
     val status: Status,
     override val createdAt: LocalDateTime,
     val comments: List<CommentDTO>?,
-    val content:String?
-) : IResponseDTO<UUID> {
+    val content: String?,
+    override val icon: String? = null
+) : IResponseDTO<UUID>, IFileIcon {
     constructor(
         post: Post.Raw,
         author: SimpleUserDTO,
+        content: String?,
         category: CategoryDTO? = null,
         comments: List<CommentDTO>? = null,
-        content:String?=null
+        icon: String? = null
     ) : this(
         post.id!!.value,
         post.title,
@@ -33,18 +37,20 @@ data class PostResponseDTO(
         category,
         post.status,
         post.createdAt!!,
-        comments = comments,
-        content= content
+        comments,
+        content,
+        icon
     )
 
-    constructor(post: Post.Joined, comments: List<CommentDTO>? = null, content:String?=null) : this(
+    constructor(post: Post.Joined, content: String?, comments: List<CommentDTO>? = null, icon: String?=null) : this(
         post.id!!.value,
         post.title,
         SimpleUserDTO(post.author.id.value, post.author.name),
         post.category?.let { CategoryDTO(it) },
         post.status,
         post.createdAt!!,
-        comments = comments,
-        content= content
+        comments,
+        content,
+        icon
     )
 }

@@ -30,7 +30,9 @@ class ProjectService(val projectRepository: ProjectRepository, val typeRepositor
     }
 
     fun update(id: Project.Id, dto: UpdateProjectDTO): Project.Joined {
-        val project = projectRepository.update(id, dto.title, dto.status)
+        val project = if (dto.title == null && dto.status == null)
+            projectRepository.findById(id)!!
+        else projectRepository.update(id, dto.title, dto.status)
         val types = dto.types?.let { updateRelation(it, project.id!!) } ?: typeRepository.find(id)
         return Project.Joined(project, types)
     }

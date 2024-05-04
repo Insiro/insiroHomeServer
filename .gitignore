@@ -39,5 +39,4 @@ out/
 ### Kotlin ###
 .kotlin
 
-env.yml
 /data
