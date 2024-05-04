@@ -30,7 +30,7 @@ class PostServiceTest : AbsDataBaseTest(Users, Categories, Posts) {
     fun initTest() {
         resetDataBase()
         user = DBInserter.insertUser(User("testUser", "testPwd", "testEmail", 0b1))
-        category = DBInserter.insertCategory(Category("testCate"))
+        category = DBInserter.insertCategory(Category("TEST_CATEGORY"))
         post = DBInserter.insertPost(Post.Raw("testPost", Status.PUBLISHED, user.id!!, category.id))
     }
 

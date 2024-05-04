@@ -43,7 +43,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
     private val commentService = mock(CommentService::class.java)
     private val postFileService = mock(PostFileService::class.java)
     private val user = User("testUser", "", "testEmail", 0b1, id = User.Id(1), LocalDateTime.now())
-    private val category = Category("Default", Category.Id(0), LocalDateTime.now())
+    private val category = Category("DEFAULT", Category.Id(0), LocalDateTime.now())
     private val post =
         Post.Raw(
             "testPost",

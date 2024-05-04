@@ -33,7 +33,7 @@ class CommentServiceTest : AbsDataBaseTest(Users, Categories, Posts, Comments) {
         resetDataBase()
         user = DBInserter.insertUser(User("testUser", "testPwd", "testEmail", 0b1, User.Id(1)))
         commentUserInfo = CommentUserInfo.UserInfo(user)
-        category = DBInserter.insertCategory(Category("category"))
+        category = DBInserter.insertCategory(Category("CATEGORY"))
         post = DBInserter.insertPost(Post.Raw("testPost", Status.PUBLISHED, user.id!!, category.id!!))
         comment = DBInserter.insertComment(Comment("testComment", post.id!!, null, commentUserInfo))
     }
