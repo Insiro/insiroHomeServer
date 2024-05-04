@@ -52,7 +52,7 @@ class StaticFileRepository(override val location: String) : IFileRepository {
 
     //by item
     override fun exist(fileVO: IFileItem): Boolean {
-        return path(fileVO).toFile().isFile.not()
+        return path(fileVO).toFile().exists()
     }
 
     override fun get(fileVO: IFileItem): IFileItem? {
