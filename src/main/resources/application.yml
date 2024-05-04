@@ -12,3 +12,5 @@ server:
   port: ${API.port:8080}
   error:
     include-stacktrace: never
+  servlet:
+    context-path: ${API.path}
