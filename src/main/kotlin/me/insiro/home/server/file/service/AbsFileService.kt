@@ -42,9 +42,12 @@ abstract class AbsFileService<VO : IEntityVO<*>>(
     }
 
     private fun iconPath(collection: String): String? {
-        val iconFile = VOFileItem(domain, collection, "index.png")
+        val iconFile = VOFileItem(domain, collection, "icon.png")
         if (repository.exist(iconFile))
             return "static/${domain}/${collection}/icon.png"
+        val preview = iconFile.copy(name= "preview.png")
+        if (repository.exist(preview))
+            return "static/${domain}/${collection}/preview.png"
         return null
     }
 
@@ -82,10 +85,10 @@ abstract class AbsFileService<VO : IEntityVO<*>>(
     }
 
     protected fun update(item: VOTextFileItem, delete: List<String>?, create: List<MultipartFile>?): String? {
-        val content = repository.save(item).content
+        item.content?.let{ repository.save(item).content}
         delete?.forEach { repository.delete(VOFileItem(item, it)) }
         create?.forEach { repository.addItem(item, it) }
-        return content
+        return item.content
     }
 
 
