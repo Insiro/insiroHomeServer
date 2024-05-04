@@ -1,6 +1,6 @@
 spring:
   config:
-    import: "file:./data/${spring.profiles.active:dev}.env.yml"
+    import: "file:./data/${spring.profiles.active:default}.env.yml"
   datasource:
     url: ${DB.url}
     username: ${DB.username}
@@ -9,5 +9,6 @@ spring:
   exposed:
     generate-ddl: true
 server:
+  port: ${API.port:8080}
   error:
     include-stacktrace: never
