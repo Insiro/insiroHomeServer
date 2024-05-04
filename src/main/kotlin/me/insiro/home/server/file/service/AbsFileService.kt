@@ -37,6 +37,20 @@ abstract class AbsFileService<VO : IEntityVO<*>>(
         return if (load) repository.load(textFileItem) else repository.get(textFileItem)
     }
 
+    fun iconPath(vo: VO): String? {
+        return iconPath(collectionName(vo))
+    }
+
+    private fun iconPath(collection: String): String? {
+        val iconFile = VOFileItem(domain, collection, "icon.png")
+        if (repository.exist(iconFile))
+            return "static/${domain}/${collection}/icon.png"
+        val preview = iconFile.copy(name= "preview.png")
+        if (repository.exist(preview))
+            return "static/${domain}/${collection}/preview.png"
+        return null
+    }
+
     protected fun get(collection: String, item: String): IFileItem? {
         return repository.get(VOFileItem(domain, collection, item))
     }
@@ -70,15 +84,16 @@ abstract class AbsFileService<VO : IEntityVO<*>>(
         return find(collectionName(vo))
     }
 
-    protected fun update(item: VOTextFileItem, delete: List<String>?, create: List<MultipartFile>?) {
-        repository.save(item)
+    protected fun update(item: VOTextFileItem, delete: List<String>?, create: List<MultipartFile>?): String? {
+        item.content?.let{ repository.save(item).content}
         delete?.forEach { repository.delete(VOFileItem(item, it)) }
         create?.forEach { repository.addItem(item, it) }
+        return item.content
     }
 
 
-    fun update(vo: VO, modifyDTO: IModifyFileDTO, files: List<MultipartFile>?) {
-        update(VOTextFileItem(domain, collectionName(vo), "index.md"), modifyDTO.deletedFileNames, files)
+    fun update(vo: VO, modifyDTO: IModifyFileDTO, files: List<MultipartFile>?): String? {
+        return update(VOTextFileItem(domain, collectionName(vo), "index.md"), modifyDTO.deletedFileNames, files)
     }
 
 

@@ -25,7 +25,7 @@ class ProjectServiceTest : AbsDataBaseTest(Projects, ProjectTypes, ProjectTypeRe
     fun initTest() {
         resetDataBase()
         project = DBInserter.insertProject(Project.Raw("title"))
-        type = DBInserter.insertProjectType(ProjectType("type"))
+        type = DBInserter.insertProjectType(ProjectType("TYPE"))
         DBInserter.insertProjectTypeRelation(project, type)
     }
 
@@ -38,7 +38,7 @@ class ProjectServiceTest : AbsDataBaseTest(Projects, ProjectTypes, ProjectTypeRe
 
     @Test
     fun `create new Project and Get Id`() {
-        val dto = NewProjectDTO("title", Status.PUBLISHED, "content", arrayListOf("newType", "type"))
+        val dto = NewProjectDTO("title", Status.PUBLISHED, "content", arrayListOf("NEW_TYPE", "TYPE"))
         val id = projectService.create(dto).getOrThrow().id!!
         val result = projectService.get(id).getOrThrow()
         assertEquals(dto.title, result.title)

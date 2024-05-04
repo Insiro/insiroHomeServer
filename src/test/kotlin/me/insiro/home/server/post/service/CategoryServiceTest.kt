@@ -24,7 +24,7 @@ class CategoryServiceTest : AbsDataBaseTest(Categories) {
     @BeforeEach
     fun resetTest() {
         resetDataBase()
-        category = insert(Category("testCategory"))
+        category = insert(Category("TEST_CATEGORY"))
     }
 
     private fun insert(category: Category): Category = transaction {

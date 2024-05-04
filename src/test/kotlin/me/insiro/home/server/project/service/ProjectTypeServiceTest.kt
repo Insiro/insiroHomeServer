@@ -21,7 +21,7 @@ class ProjectTypeServiceTest : AbsDataBaseTest(Projects, ProjectTypes, ProjectTy
         resetDataBase()
         service = ProjectTypeService(typeRepository)
         project = DBInserter.insertProject(Project.Raw("title"))
-        type = DBInserter.insertProjectType(ProjectType("type"))
+        type = DBInserter.insertProjectType(ProjectType("TYPE"))
         DBInserter.insertProjectTypeRelation(project, type)
     }
 
@@ -43,7 +43,7 @@ class ProjectTypeServiceTest : AbsDataBaseTest(Projects, ProjectTypes, ProjectTy
 
     @Test
     fun `test Update`() {
-        val modifyDTO = ModifyProjectTypeDTO("newType")
+        val modifyDTO = ModifyProjectTypeDTO("NEW_TYPE")
         val updated = service.update(type.id!!, modifyDTO).getOrNull()
         val found = service.find().first()
         assertNotNull(updated)

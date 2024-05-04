@@ -5,4 +5,4 @@ import me.insiro.home.server.post.entity.Post
 import org.springframework.stereotype.Service
 
 @Service
-class PostFileService(fileRepository: IFileRepository) : AbsFileService<Post>("post", fileRepository)
+class PostFileService(fileRepository: IFileRepository) : AbsFileService<Post>("posts", fileRepository)

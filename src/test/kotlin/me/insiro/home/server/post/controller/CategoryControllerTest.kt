@@ -22,7 +22,7 @@ import java.util.*
 class CategoryControllerTest : AbsControllerTest("/category") {
     private val postService = mock(PostService::class.java)
     private val categoryService = mock(CategoryService::class.java)
-    private val category = Category("testCategory", Category.Id(1))
+    private val category = Category("TEST_CATEGORY", Category.Id(1))
 
     @BeforeEach
     override fun init() {
