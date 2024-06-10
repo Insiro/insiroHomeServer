@@ -14,10 +14,7 @@ abstract class AbsFileService<VO : IEntityVO<*>>(
     protected val repository: IFileRepository
 ) {
 
-    private fun collectionName(vo: VO): String {
-        assert(vo.id != null)
-        return "${vo.id!!.value}"
-    }
+    protected abstract fun collectionName(vo: VO): String
 
     fun create(
         vo: VO,
