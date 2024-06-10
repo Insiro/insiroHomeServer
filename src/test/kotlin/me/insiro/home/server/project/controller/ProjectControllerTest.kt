@@ -24,7 +24,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import java.time.LocalDateTime
-import java.util.*
 
 @ExtendWith(MockitoExtension::class)
 class ProjectControllerTest : AbsControllerTest("projects") {
@@ -39,7 +38,7 @@ class ProjectControllerTest : AbsControllerTest("projects") {
     override fun init() {
         controller = ProjectController(projectService, fileService)
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build()
-        project = Project.Joined("title", id = Project.Id(UUID.randomUUID()), createdAt = LocalDateTime.now())
+        project = Project.Joined("title", id = Project.Id(0), createdAt = LocalDateTime.now())
     }
 
     @Test
@@ -52,8 +51,8 @@ class ProjectControllerTest : AbsControllerTest("projects") {
 
     @Test
     fun getProjectById() {
-        Mockito.`when`(projectService.get(project.id!!)).thenReturn(Result.success(project))
-        mockMvc.perform(MockMvcRequestBuilders.get(uri(project.id!!)))
+        Mockito.`when`(projectService.get(project.title)).thenReturn(Result.success(project))
+        mockMvc.perform(MockMvcRequestBuilders.get(uri(project.title)))
             .andExpect { status().isOk }
             .andExpect { ResultMatcher { jsonPath("$.id").value(project.id) } }
             .andExpect { ResultMatcher { jsonPath("$.title").value(project.title) } }

@@ -7,17 +7,16 @@ import me.insiro.home.server.application.domain.entity.Status
 import me.insiro.home.server.project.entity.Project
 import me.insiro.home.server.project.entity.ProjectType
 import java.time.LocalDateTime
-import java.util.UUID
 
 data class ProjectDTO(
-    override val id: UUID,
+    override val id: Long,
     val title: String,
     val status: Status,
     var type: List<ProjectType>? = null,
     override val createdAt: LocalDateTime?,
     val content: String?,
     override var icon: String? = null
-) : IFileIcon,IResponseDTO<UUID>, ICreatedAt {
+) : IFileIcon,IResponseDTO<Long>, ICreatedAt {
     constructor(project: Project, content: String? = null, icon: String? = null) : this(
         project.id!!.value, project.title, project.status,
         when (project) {

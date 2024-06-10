@@ -51,10 +51,12 @@ class ProjectTypeRepository : AbsRepository<Int, ProjectTypes, ProjectType, Proj
     }
 
     fun addRelationOrInsert(projectId: Project.Id, typeName: String): ProjectType = transaction {
-        val type = get(typeName).getOrNull() ?: ProjectType(
-            typeName,
-            ProjectType.Id(ProjectTypes.insertAndGetId { it[name] = typeName })
-        )
+        val type = get(typeName).getOrElse {
+            ProjectType(
+                typeName,
+                ProjectType.Id(ProjectTypes.insertAndGetId { it[name] = typeName })
+            )
+        }
         ProjectTypeRelations.insert {
             it[this.projectId] = projectId.value
             it[this.typeId] = type.id!!.value

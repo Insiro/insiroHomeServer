@@ -2,13 +2,13 @@ package me.insiro.home.server.project.entity
 
 import me.insiro.home.server.application.domain.entity.*
 import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.javatime.datetime
 import java.time.LocalDateTime
-import java.util.*
 
-object Projects : UUIDBaseTable(), ITitledTable, TableCreatedAt {
+object Projects : LongIdTable(), ITitledTable, TableCreatedAt {
     val status = enumeration<Status>("status")
     override val title = varchar("title", 100)
     override val createdAt = datetime("createdAt").clientDefault { LocalDateTime.now() }
@@ -17,16 +17,16 @@ object Projects : UUIDBaseTable(), ITitledTable, TableCreatedAt {
 object ProjectTypeRelations : Table() {
     val typeId = reference("typeId", ProjectTypes.id, onDelete = ReferenceOption.CASCADE)
     val projectId = reference("projectId", Projects.id, onDelete = ReferenceOption.CASCADE)
-    override val primaryKey: PrimaryKey = PrimaryKey(typeId, projectId, name = "typeId_projectTitle")
+    override val primaryKey: PrimaryKey = PrimaryKey(typeId, projectId, name = "typeId_projectId")
 }
 
-sealed interface Project : UUIDEntityVO, TitledVO, ICreatedAt {
+sealed interface Project : LongEntityVO, TitledVO, ICreatedAt {
     val status: Status
     override val id: Id?
 
     @JvmInline
-    value class Id(override val value: UUID) : VoUUID {
-        constructor(entityID: EntityID<UUID>) : this(entityID.value)
+    value class Id(override val value: Long) : LongID {
+        constructor(entityID: EntityID<Long>) : this(entityID.value)
     }
 
     data class Raw(
