@@ -2,6 +2,7 @@ package me.insiro.home.server.post.entity
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import me.insiro.home.server.application.domain.entity.ICreatedAt
 import me.insiro.home.server.application.domain.entity.LongBaseTable
 import me.insiro.home.server.application.domain.entity.LongEntityVO
 import me.insiro.home.server.application.domain.entity.LongID
@@ -24,7 +25,7 @@ data class Comment(
     var author: CommentUserInfo,
     override val id: Id? = null,
     override val createdAt: LocalDateTime? = null,
-) : LongEntityVO {
+) : LongEntityVO, ICreatedAt {
     @JvmInline
     @Serializable
     value class Id(override val value: Long) : LongID {

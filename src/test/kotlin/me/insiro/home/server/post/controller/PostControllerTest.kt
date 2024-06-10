@@ -43,7 +43,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
     private val commentService = mock(CommentService::class.java)
     private val postFileService = mock(PostFileService::class.java)
     private val user = User("testUser", "", "testEmail", 0b1, id = User.Id(1), LocalDateTime.now())
-    private val category = Category("DEFAULT", Category.Id(0), LocalDateTime.now())
+    private val category = Category("DEFAULT", Category.Id(0))
     private val post =
         Post.Raw(
             "testPost",
@@ -109,7 +109,7 @@ class PostControllerTest : AbsControllerTest("/posts") {
 
     @Test
     fun updatePost() {
-        val cate2 = Category("cate2", Category.Id(2), createdAt = LocalDateTime.now())
+        val cate2 = Category("cate2", Category.Id(2))
         val updated = post.copy(categoryId = cate2.id, status = Status.HIDDEN)
         val updateDTO = UpdatePostDTO(category = cate2.name, status = updated.status)
         val dtoPart = MockPart("data", gson.toJson(updateDTO).toByteArray())

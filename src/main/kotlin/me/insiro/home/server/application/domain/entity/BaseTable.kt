@@ -12,29 +12,31 @@ import java.util.*
 interface IEntityVO<ID : Comparable<ID>> {
     val id: Id<ID>?
 
-    val createdAt: LocalDateTime?
-
     interface Id<ID> {
         val value: ID
     }
 }
+
+interface ICreatedAt{
+    val createdAt: LocalDateTime?
+}
+interface TableCreatedAt{
+    val createdAt: Column<LocalDateTime>
+}
+
 typealias IntEntityVO = IEntityVO<Int>
 typealias LongEntityVO = IEntityVO<Long>
 typealias UUIDEntityVO = IEntityVO<UUID>
 
-interface IBaseTable<ID : Comparable<ID>> {
-    val createdAt: Column<LocalDateTime>
+abstract class LongBaseTable :  LongIdTable() , TableCreatedAt{
+    override val createdAt = datetime("createdAt").clientDefault{LocalDateTime.now()}
 }
 
-abstract class LongBaseTable : IBaseTable<Long>, LongIdTable() {
+abstract class UUIDBaseTable : UUIDTable() , TableCreatedAt{
     override val createdAt = datetime("createdAt").clientDefault { LocalDateTime.now() }
 }
 
-abstract class UUIDBaseTable : IBaseTable<UUID>, UUIDTable() {
-    override val createdAt = datetime("createdAt").clientDefault { LocalDateTime.now() }
-}
-
-abstract class IntBaseTable : IBaseTable<Int>, IntIdTable() {
+abstract class IntBaseTable :  IntIdTable(), TableCreatedAt {
     override val createdAt = datetime("createdAt").clientDefault { LocalDateTime.now() }
 }
 

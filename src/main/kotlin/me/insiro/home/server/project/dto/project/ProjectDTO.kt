@@ -2,11 +2,12 @@ package me.insiro.home.server.project.dto.project
 
 import me.insiro.home.server.application.domain.dto.IFileIcon
 import me.insiro.home.server.application.domain.dto.IResponseDTO
+import me.insiro.home.server.application.domain.entity.ICreatedAt
 import me.insiro.home.server.application.domain.entity.Status
 import me.insiro.home.server.project.entity.Project
 import me.insiro.home.server.project.entity.ProjectType
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 data class ProjectDTO(
     override val id: UUID,
@@ -16,7 +17,7 @@ data class ProjectDTO(
     override val createdAt: LocalDateTime?,
     val content: String?,
     override var icon: String? = null
-) : IFileIcon, IResponseDTO<UUID> {
+) : IFileIcon,IResponseDTO<UUID>, ICreatedAt {
     constructor(project: Project, content: String? = null, icon: String? = null) : this(
         project.id!!.value, project.title, project.status,
         when (project) {

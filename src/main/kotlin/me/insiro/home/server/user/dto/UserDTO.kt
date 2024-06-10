@@ -1,6 +1,7 @@
 package me.insiro.home.server.user.dto
 
 import me.insiro.home.server.application.domain.dto.IResponseDTO
+import me.insiro.home.server.application.domain.entity.ICreatedAt
 import me.insiro.home.server.user.entity.User
 import java.time.LocalDateTime
 
@@ -10,7 +11,7 @@ data class UserDTO(
     val role: List<UserRole>,
     val email: String,
     override val createdAt: LocalDateTime
-) : IResponseDTO<Long> {
+) : IResponseDTO<Long>,ICreatedAt {
     companion object {
         fun fromUser(user: User): UserDTO {
             assert(user.createdAt != null)

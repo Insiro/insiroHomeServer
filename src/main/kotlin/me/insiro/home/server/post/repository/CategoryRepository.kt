@@ -4,10 +4,13 @@ import me.insiro.home.server.application.AbsRepository
 import me.insiro.home.server.post.entity.Categories
 import me.insiro.home.server.post.entity.Category
 import me.insiro.home.server.post.exception.category.CategoryConflictException
-import org.jetbrains.exposed.sql.*
+import me.insiro.home.server.post.exception.category.CategoryNotFoundException
+import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.insertAndGetId
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.update
 import org.springframework.stereotype.Repository
-import java.time.LocalDateTime
 
 @Repository
 class CategoryRepository : AbsRepository<Int, Categories, Category, Category.Id> {
@@ -16,29 +19,26 @@ class CategoryRepository : AbsRepository<Int, Categories, Category, Category.Id>
         return Category(
             it[Categories.name],
             Category.Id(it[Categories.id].value),
-            it[Categories.createdAt]
         )
     }
 
     override fun update(vo: Category): Category = transaction {
         assert(vo.id != null)
-        findByName(vo.name)?.let { throw CategoryConflictException(vo.name) }
+        if (findByName(vo.name).isSuccess)
+            throw CategoryConflictException(vo.name)
         Categories.update({ Categories.id eq vo.id!!.value }) { it[name] = vo.name }
         vo
     }
 
     override fun new(vo: Category): Category = transaction {
-        findByName(vo.name)?.let { throw CategoryConflictException(vo.name) }
-        val now = LocalDateTime.now()
-        val id = Categories.insertAndGetId {
-            it[name] = vo.name
-            it[createdAt] = now
-        }
-        vo.copy(id = Category.Id(id), createdAt = now)
+        if (findByName(vo.name).isSuccess)
+            throw CategoryConflictException(vo.name)
+        val id = Categories.insertAndGetId { it[name] = vo.name }
+        vo.copy(id = Category.Id(id))
     }
 
-    fun findByName(name: String): Category? = transaction {
-        val query = Categories.selectAll().where { Categories.name eq name }.firstOrNull()
-        query?.let { relationObjectMapping(query) }
+    fun findByName(name: String): Result<Category> = transaction {
+        Categories.selectAll().where { Categories.name eq name }.firstOrNull()
+            ?.let { Result.success(relationObjectMapping(it)) } ?: Result.failure(CategoryNotFoundException(name))
     }
 }

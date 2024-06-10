@@ -2,8 +2,8 @@ package me.insiro.home.server.post.dto.post
 
 import me.insiro.home.server.application.domain.dto.IFileIcon
 import me.insiro.home.server.application.domain.dto.IResponseDTO
+import me.insiro.home.server.application.domain.entity.ICreatedAt
 import me.insiro.home.server.application.domain.entity.Status
-import me.insiro.home.server.file.vo.IFileItem
 import me.insiro.home.server.post.dto.category.CategoryDTO
 import me.insiro.home.server.post.dto.comment.CommentDTO
 import me.insiro.home.server.post.entity.Post
@@ -22,7 +22,7 @@ data class PostResponseDTO(
     val comments: List<CommentDTO>?,
     val content: String?,
     override val icon: String? = null
-) : IResponseDTO<UUID>, IFileIcon {
+) : IResponseDTO<UUID>, IFileIcon, ICreatedAt {
     constructor(
         post: Post.Raw,
         author: SimpleUserDTO,

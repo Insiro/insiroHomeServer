@@ -10,14 +10,13 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.stereotype.Repository
-import java.time.LocalDateTime
 
 @Repository
 class ProjectTypeRepository : AbsRepository<Int, ProjectTypes, ProjectType, ProjectType.Id> {
     override val table = ProjectTypes
 
     override fun relationObjectMapping(it: ResultRow): ProjectType {
-        return ProjectType(it[table.name], ProjectType.Id(it[table.id]), it[table.createdAt])
+        return ProjectType(it[table.name], ProjectType.Id(it[table.id]))
     }
 
     override fun update(vo: ProjectType): ProjectType = transaction {
@@ -26,12 +25,8 @@ class ProjectTypeRepository : AbsRepository<Int, ProjectTypes, ProjectType, Proj
     }
 
     override fun new(vo: ProjectType): ProjectType = transaction {
-        val now = LocalDateTime.now()
-        val id = ProjectTypes.insertAndGetId {
-            it[name] = vo.name
-            it[createdAt] = now
-        }
-        vo.copy(id = ProjectType.Id(id), createdAt = now)
+        val id = ProjectTypes.insertAndGetId { it[name] = vo.name }
+        vo.copy(id = ProjectType.Id(id))
     }
 
     fun get(projectName: String): Result<ProjectType> = transaction {
@@ -47,7 +42,7 @@ class ProjectTypeRepository : AbsRepository<Int, ProjectTypes, ProjectType, Proj
         val query = ProjectTypeRelations
             .join(ProjectTypes, JoinType.LEFT, onColumn = ProjectTypeRelations.typeId, otherColumn = ProjectTypes.id)
             .select(ProjectTypes.fields)
-        projectId?.let { query.where { ProjectTypeRelations.projectId eq projectId.value } }
+        projectId?.apply { query.where { ProjectTypeRelations.projectId eq projectId.value } }
         query.map { relationObjectMapping(it) }
     }
 

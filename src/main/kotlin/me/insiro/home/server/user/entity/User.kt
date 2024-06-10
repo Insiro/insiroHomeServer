@@ -1,6 +1,7 @@
 package me.insiro.home.server.user.entity
 
 import kotlinx.serialization.Serializable
+import me.insiro.home.server.application.domain.entity.ICreatedAt
 import me.insiro.home.server.application.domain.entity.LongBaseTable
 import me.insiro.home.server.application.domain.entity.LongEntityVO
 import me.insiro.home.server.application.domain.entity.LongID
@@ -24,7 +25,7 @@ data class User(
     var permission: Int,
     override val id: Id? = null,
     override val createdAt: LocalDateTime? = null,
-) : LongEntityVO {
+) : LongEntityVO, ICreatedAt {
     @JvmInline
     @Serializable
     value class Id(override val value: Long) : LongID {

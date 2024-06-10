@@ -4,21 +4,23 @@ import me.insiro.home.server.application.domain.entity.*
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.sql.javatime.datetime
 import java.time.LocalDateTime
 import java.util.*
 
-object Projects : UUIDBaseTable(), ITitledTable {
+object Projects : UUIDBaseTable(), ITitledTable, TableCreatedAt {
     val status = enumeration<Status>("status")
     override val title = varchar("title", 100)
+    override val createdAt = datetime("createdAt").clientDefault { LocalDateTime.now() }
 }
 
 object ProjectTypeRelations : Table() {
     val typeId = reference("typeId", ProjectTypes.id, onDelete = ReferenceOption.CASCADE)
     val projectId = reference("projectId", Projects.id, onDelete = ReferenceOption.CASCADE)
-    override val primaryKey: PrimaryKey = PrimaryKey(typeId, projectId, name = "typeId_projectId")
+    override val primaryKey: PrimaryKey = PrimaryKey(typeId, projectId, name = "typeId_projectTitle")
 }
 
-sealed interface Project : UUIDEntityVO, TitledVO {
+sealed interface Project : UUIDEntityVO, TitledVO, ICreatedAt {
     val status: Status
     override val id: Id?
 
@@ -41,11 +43,10 @@ sealed interface Project : UUIDEntityVO, TitledVO {
         val types: List<ProjectType>? = null,
         override val createdAt: LocalDateTime? = null,
     ) : Project {
-
         constructor(project: Project, types: List<ProjectType>? = null) : this(
             project.title,
             project.status,
-            Id(project.id!!.value),
+            project.id,
             types,
             project.createdAt
         )

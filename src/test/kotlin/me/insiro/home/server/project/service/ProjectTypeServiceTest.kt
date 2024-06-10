@@ -38,7 +38,6 @@ class ProjectTypeServiceTest : AbsDataBaseTest(Projects, ProjectTypes, ProjectTy
         val created = service.create(ModifyProjectTypeDTO(typeName)).getOrThrow()
         val found = service.get(created.id!!).getOrThrow()
         assertEquals(found.name, created.name)
-        assertNotNull(found.createdAt)
     }
 
     @Test

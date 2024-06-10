@@ -15,11 +15,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
-import java.time.LocalDateTime
 
 @ExtendWith(MockitoExtension::class)
 class ProjectTypeControllerTest : AbsControllerTest("projects/types") {
-    private val type = ProjectType("TEST_TYPE", id = ProjectType.Id(1), LocalDateTime.now())
+    private val type = ProjectType("TEST_TYPE", id = ProjectType.Id(1))
     private val service = mock(ProjectTypeService::class.java)
     private lateinit var controller: ProjectTypeController
 
