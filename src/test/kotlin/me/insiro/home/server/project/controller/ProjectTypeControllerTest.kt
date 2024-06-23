@@ -38,7 +38,7 @@ class ProjectTypeControllerTest : AbsControllerTest("projects/types") {
 
     @Test
     fun `test create Type`() {
-        val dto = ModifyProjectTypeDTO(type.name)
+        val dto = ModifyProjectTypeDTO(type.name, false)
         Mockito.`when`(service.create(dto)).thenReturn(Result.success(type))
         mockMvc.perform(
             MockMvcRequestBuilders.post(uri)
@@ -60,7 +60,7 @@ class ProjectTypeControllerTest : AbsControllerTest("projects/types") {
 
     @Test
     fun `test update`() {
-        val dto = ModifyProjectTypeDTO("NEW_NAME")
+        val dto = ModifyProjectTypeDTO("NEW_NAME", false)
         Mockito.`when`(service.update(type.id!!, dto)).thenReturn(Result.success(type.copy(name = dto.name)))
         mockMvc.perform(
             MockMvcRequestBuilders.patch(uri(type.id!!))

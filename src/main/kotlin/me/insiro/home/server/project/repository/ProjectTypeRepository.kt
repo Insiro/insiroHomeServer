@@ -16,16 +16,22 @@ class ProjectTypeRepository : AbsRepository<Int, ProjectTypes, ProjectType, Proj
     override val table = ProjectTypes
 
     override fun relationObjectMapping(it: ResultRow): ProjectType {
-        return ProjectType(it[table.name], ProjectType.Id(it[table.id]))
+        return ProjectType(it[table.name], it[table.isLang], ProjectType.Id(it[table.id]))
     }
 
     override fun update(vo: ProjectType): ProjectType = transaction {
-        ProjectTypes.update(where = { ProjectTypes.id eq vo.id!!.value }) { it[name] = vo.name }
+        ProjectTypes.update(where = { ProjectTypes.id eq vo.id!!.value }) {
+            it[name] = vo.name
+            it[isLang] = vo.isLang
+        }
         vo
     }
 
     override fun new(vo: ProjectType): ProjectType = transaction {
-        val id = ProjectTypes.insertAndGetId { it[name] = vo.name }
+        val id = ProjectTypes.insertAndGetId {
+            it[name] = vo.name
+            it[isLang] = vo.isLang
+        }
         vo.copy(id = ProjectType.Id(id))
     }
 
@@ -54,6 +60,7 @@ class ProjectTypeRepository : AbsRepository<Int, ProjectTypes, ProjectType, Proj
         val type = get(typeName).getOrElse {
             ProjectType(
                 typeName,
+                false,
                 ProjectType.Id(ProjectTypes.insertAndGetId { it[name] = typeName })
             )
         }

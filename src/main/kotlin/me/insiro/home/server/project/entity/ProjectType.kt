@@ -5,17 +5,19 @@ import me.insiro.home.server.application.domain.entity.IntID
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 
-object ProjectTypes : IntIdTable(){
-    val name = varchar("name", 100) .uniqueIndex()
+object ProjectTypes : IntIdTable() {
+    val name = varchar("name", 100).uniqueIndex()
+    val isLang = bool("is_lang").default(false)
 }
 
 
 data class ProjectType(
     var name: String,
-    override val id: Id?=null,
+    var isLang: Boolean = false,
+    override val id: Id? = null,
 ) : IntEntityVO {
     @JvmInline
-    value class Id(override val value: Int) : IntID{
+    value class Id(override val value: Int) : IntID {
         constructor(entityID: EntityID<Int>) : this(entityID.value)
     }
 }
