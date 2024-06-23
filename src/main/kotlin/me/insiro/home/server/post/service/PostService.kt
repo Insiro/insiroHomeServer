@@ -6,7 +6,6 @@ import me.insiro.home.server.post.dto.post.NewPostDTO
 import me.insiro.home.server.post.dto.post.UpdatePostDTO
 import me.insiro.home.server.post.entity.Category
 import me.insiro.home.server.post.entity.Post
-import me.insiro.home.server.post.exception.post.PostDuplicatedException
 import me.insiro.home.server.post.exception.post.PostModifyForbiddenException
 import me.insiro.home.server.post.exception.post.PostNotFoundException
 import me.insiro.home.server.post.repository.PostRepository
@@ -28,12 +27,7 @@ class PostService(private val postRepository: PostRepository) {
 
     fun createPost(createDTO: NewPostDTO, user: User, categoryId: Category.Id? = null): Result<Post.Raw> {
         val post = Post.Raw(createDTO.title, createDTO.status ?: Status.PUBLISHED, user.id!!, categoryId)
-        return when (val id = createDTO.id) {
-            null -> postRepository.new(post)
-            else -> postRepository.new(post, id)
-        }?.let { Result.success(it) }
-            ?: return Result.failure(PostDuplicatedException(createDTO.id!!))
-
+        return postRepository.new(post).let { Result.success(it) }
     }
 
     fun updatePost(id: Post.Id, updateDTO: UpdatePostDTO, categoryId: Category.Id?, user: User): Result<Post.Raw> {

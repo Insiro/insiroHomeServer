@@ -7,7 +7,6 @@ import me.insiro.home.server.file.service.ProjectFileService
 import me.insiro.home.server.project.dto.project.NewProjectDTO
 import me.insiro.home.server.project.dto.project.ProjectDTO
 import me.insiro.home.server.project.dto.project.UpdateProjectDTO
-import me.insiro.home.server.project.entity.Project
 import me.insiro.home.server.project.service.ProjectService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -46,31 +45,31 @@ class ProjectController(
         return ResponseEntity(ProjectDTO(project, content = newProjectDTO.content, icon), HttpStatus.CREATED)
     }
 
-    @GetMapping("{id}")
-    fun getProjectById(@PathVariable id: Project.Id): ResponseEntity<ProjectDTO> {
-        val project = projectService.get(id).getOrThrow()
+    @GetMapping("{title}")
+    fun getProjectByTitle(@PathVariable title: String): ResponseEntity<ProjectDTO> {
+        val project = projectService.get(title).getOrThrow()
         val loaded = fileService.get(vo = project, load = true)
         val icon = fileService.iconPath(project)
         return ResponseEntity(ProjectDTO(project, loaded?.content, icon), HttpStatus.OK)
     }
 
     @Secured("ROLE_ADMIN")
-    @PatchMapping("{id}")
+    @PatchMapping("{title}")
     fun updateProject(
-        @PathVariable id: Project.Id,
+        @PathVariable title: String,
         @RequestPart("data") updateDTO: UpdateProjectDTO,
         @RequestParam("files") files: List<MultipartFile>?
     ): ResponseEntity<ProjectDTO> {
-        val project = projectService.update(id, updateDTO)
+        val project = projectService.update(title, updateDTO).getOrThrow()
         fileService.update(project, updateDTO, files)
         val icon = fileService.iconPath(project)
-        return ResponseEntity(ProjectDTO(project,  icon = icon), HttpStatus.OK)
+        return ResponseEntity(ProjectDTO(project, icon = icon), HttpStatus.OK)
     }
 
     @Secured("ROLE_ADMIN")
-    @DeleteMapping("{id}")
-    fun deleteProject(@PathVariable id: Project.Id) {
-        val project = projectService.get(id).getOrThrow()
+    @DeleteMapping("{title}")
+    fun deleteProject(@PathVariable title: String) {
+        val project = projectService.get(title).getOrThrow()
         projectService.delete(project)
         fileService.delete(project)
         return

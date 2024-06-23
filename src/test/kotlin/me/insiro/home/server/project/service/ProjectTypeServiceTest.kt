@@ -35,15 +35,14 @@ class ProjectTypeServiceTest : AbsDataBaseTest(Projects, ProjectTypes, ProjectTy
     @Test
     fun `test create and get`() {
         val typeName = "testType1"
-        val created = service.create(ModifyProjectTypeDTO(typeName)).getOrThrow()
+        val created = service.create(ModifyProjectTypeDTO(typeName, false)).getOrThrow()
         val found = service.get(created.id!!).getOrThrow()
         assertEquals(found.name, created.name)
-        assertNotNull(found.createdAt)
     }
 
     @Test
     fun `test Update`() {
-        val modifyDTO = ModifyProjectTypeDTO("NEW_TYPE")
+        val modifyDTO = ModifyProjectTypeDTO("NEW_TYPE", false)
         val updated = service.update(type.id!!, modifyDTO).getOrNull()
         val found = service.find().first()
         assertNotNull(updated)

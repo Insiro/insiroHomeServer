@@ -6,8 +6,6 @@ import me.insiro.home.server.project.dto.project.NewProjectDTO
 import me.insiro.home.server.project.dto.project.UpdateProjectDTO
 import me.insiro.home.server.project.entity.Project
 import me.insiro.home.server.project.entity.ProjectType
-import me.insiro.home.server.project.exception.ProjectDuplicatedException
-import me.insiro.home.server.project.exception.ProjectNotFoundException
 import me.insiro.home.server.project.repository.ProjectRepository
 import me.insiro.home.server.project.repository.ProjectTypeRepository
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -22,19 +20,17 @@ class ProjectService(val projectRepository: ProjectRepository, val typeRepositor
     }
 
     fun create(dto: NewProjectDTO): Result<Project> {
-        val project = when (val id = dto.id) {
-            null -> projectRepository.new(Project.Raw(dto.title, dto.status ?: Status.PUBLISHED))
-            else -> projectRepository.new(Project.Raw(dto.title, dto.status ?: Status.PUBLISHED), id)
-        } ?: return Result.failure(ProjectDuplicatedException(dto.id!!))
-        return Result.success(Project.Joined(project, dto.types?.let { types -> updateRelation(types, project.id!!) }))
+        val project = projectRepository.new(Project.Raw(dto.title, dto.status ?: Status.PUBLISHED))
+        return Result.success( Project.Joined(project, dto.types?.let { types -> updateRelation(types, project.id!!) }))
     }
 
-    fun update(id: Project.Id, dto: UpdateProjectDTO): Project.Joined {
-        val project = if (dto.title == null && dto.status == null)
-            projectRepository.findById(id)!!
-        else projectRepository.update(id, dto.title, dto.status)
-        val types = dto.types?.let { updateRelation(it, project.id!!) } ?: typeRepository.find(id)
-        return Project.Joined(project, types)
+    fun update(title: String, dto: UpdateProjectDTO): Result<Project.Joined> = runCatching {
+        val project =
+            if (dto.title == null && dto.status == null)
+                projectRepository.findByTitle(title).getOrThrow()
+            else projectRepository.update(title, dto.title, dto.status).getOrThrow()
+        val types = dto.types?.let { updateRelation(it, project.id!!) } ?: typeRepository.find(project.id)
+        Project.Joined(project, types)
     }
 
     fun find(filterOption: List<Status>? = null, offsetLimit: OffsetLimit? = null): List<Project> {
@@ -46,10 +42,10 @@ class ProjectService(val projectRepository: ProjectRepository, val typeRepositor
             .map { Project.Joined(it, typeRepository.find(projectId = it.id)) }
     }
 
-    fun get(id: Project.Id): Result<Project.Joined> {
-        val project = projectRepository.findById(id) ?: return Result.failure(ProjectNotFoundException(id))
-        val types = typeRepository.find(projectId = id)
-        return Result.success(Project.Joined(project, types))
+    fun get(title: String): Result<Project.Joined> = kotlin.runCatching {
+        val project = projectRepository.findByTitle(title).getOrThrow()
+        val types = typeRepository.find(projectId = project.id)
+        Project.Joined(project, types)
     }
 
     fun delete(project: Project): Result<Project> {

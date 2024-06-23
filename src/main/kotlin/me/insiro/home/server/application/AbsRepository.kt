@@ -1,7 +1,6 @@
 package me.insiro.home.server.application
 
 import me.insiro.home.server.application.domain.dto.OffsetLimit
-import me.insiro.home.server.application.domain.entity.IBaseTable
 import me.insiro.home.server.application.domain.entity.IEntityVO
 import org.jetbrains.exposed.dao.DaoEntityID
 import org.jetbrains.exposed.dao.id.IdTable
@@ -9,7 +8,7 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
-interface AbsRepository<Id : Comparable<Id>, Table, VO, VoId> where   VO : IEntityVO<Id>, Table : IBaseTable<Id>, Table : IdTable<Id>, VoId : IEntityVO.Id<Id> {
+interface AbsRepository<Id : Comparable<Id>, Table, VO, VoId> where   VO : IEntityVO<Id>, Table : IdTable<Id>, VoId : IEntityVO.Id<Id> {
     val table: Table
     fun relationObjectMapping(it: ResultRow): VO
     fun findById(id: VoId): VO? = transaction {
@@ -31,7 +30,7 @@ interface AbsRepository<Id : Comparable<Id>, Table, VO, VoId> where   VO : IEnti
     fun update(vo: VO): VO
 
     private fun delete(id: Id): Boolean = transaction {
-        0 != table.deleteWhere { this.id eq DaoEntityID(id, table) }
+        0 != table.deleteWhere { this.id eq id }
     }
 
     fun delete(id: VoId): Boolean {

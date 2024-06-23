@@ -38,9 +38,9 @@ class ProjectServiceTest : AbsDataBaseTest(Projects, ProjectTypes, ProjectTypeRe
 
     @Test
     fun `create new Project and Get Id`() {
-        val dto = NewProjectDTO("title", Status.PUBLISHED, "content", arrayListOf("NEW_TYPE", "TYPE"))
-        val id = projectService.create(dto).getOrThrow().id!!
-        val result = projectService.get(id).getOrThrow()
+        val dto = NewProjectDTO("title2", Status.PUBLISHED, "content", arrayListOf("NEW_TYPE", "TYPE"))
+        val project = projectService.create(dto).getOrThrow()
+        val result = projectService.get(project.title).getOrThrow()
         assertEquals(dto.title, result.title)
         assertEquals(dto.status, result.status)
         assertEquals(dto.types?.sorted(), result.types?.map { it.name }?.sorted())
@@ -51,8 +51,8 @@ class ProjectServiceTest : AbsDataBaseTest(Projects, ProjectTypes, ProjectTypeRe
     @Test
     fun updateProject() {
         val updateDTO = UpdateProjectDTO("newTitle", null, null, null, null)
-        val updated = projectService.update(project.id!!, updateDTO)
-        val found = projectService.get(project.id!!).getOrThrow()
+        val updated = projectService.update(project.title, updateDTO).getOrThrow()
+        val found = projectService.get(updated.title).getOrThrow()
         assertEquals(updated.types, found.types)
         assertEquals(updateDTO.title, updated.title)
     }
@@ -60,6 +60,6 @@ class ProjectServiceTest : AbsDataBaseTest(Projects, ProjectTypes, ProjectTypeRe
     @Test
     fun deleteProject() {
         projectService.delete(project)
-        org.junit.jupiter.api.assertThrows<ProjectNotFoundException> { projectService.get(project.id!!).getOrThrow() }
+        org.junit.jupiter.api.assertThrows<ProjectNotFoundException> { projectService.get(project.title).getOrThrow() }
     }
 }

@@ -9,10 +9,8 @@ import org.springframework.stereotype.Service
 
 @Service
 class CategoryService(private val categoryRepository: CategoryRepository) {
-    fun findByName(name: String): Result<Category> {
+    fun findByName(name: String): Result<Category>  {
         return categoryRepository.findByName(name.uppercase())
-            ?.let { Result.success(it) }
-            ?: Result.failure(CategoryNotFoundException(name))
     }
 
     fun findById(id: Category.Id): Result<Category> {

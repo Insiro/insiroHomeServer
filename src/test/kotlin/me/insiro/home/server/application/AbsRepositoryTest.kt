@@ -2,11 +2,11 @@ package me.insiro.home.server.application
 
 import me.insiro.home.server.application.domain.dto.OffsetLimit
 import me.insiro.home.server.application.domain.entity.IEntityVO
-import me.insiro.home.server.application.domain.entity.IntBaseTable
 import me.insiro.home.server.testUtils.AbsDataBaseTest
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -15,13 +15,12 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
-import java.time.LocalDateTime
 
 @ExtendWith(MockitoExtension::class)
 
 class AbsRepositoryTest : AbsDataBaseTest(TestEntities) {
-    object TestEntities : IntBaseTable() {
-        val value = integer("value")
+    object TestEntities : IntIdTable() {
+        val value =integer("value")
     }
 
     // Exposed DAO Pattern
@@ -34,7 +33,6 @@ class AbsRepositoryTest : AbsDataBaseTest(TestEntities) {
     data class TestVO(
         var value: Int,
         override val id: Id? = null,
-        override val createdAt: LocalDateTime? = null,
     ) : IEntityVO<Int> {
         @JvmInline
         value class Id(override val value: Int) : IEntityVO.Id<Int> {

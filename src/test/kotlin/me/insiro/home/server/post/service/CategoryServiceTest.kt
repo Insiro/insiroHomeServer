@@ -45,7 +45,6 @@ class CategoryServiceTest : AbsDataBaseTest(Categories) {
         val cate = categoryService.findById(category.id!!).getOrThrow()
         assertEquals(category.name, cate.name)
         assertEquals(category.id, cate.id)
-        assertNotNull(cate.createdAt)
         //test wrong name
         assertThrows<CategoryNotFoundException> {
             categoryService.findById(Category.Id(category.id!!.value + 1)).getOrThrow()
@@ -97,7 +96,7 @@ class CategoryServiceTest : AbsDataBaseTest(Categories) {
 
     @Test
     fun findAll() {
-        val categories = categoryService.findAll(null).map { it.copy(createdAt = null) }
+        val categories = categoryService.findAll(null)
         assertEquals(listOf(category), categories)
     }
 }

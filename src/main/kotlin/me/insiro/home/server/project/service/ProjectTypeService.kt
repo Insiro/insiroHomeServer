@@ -19,12 +19,12 @@ class ProjectTypeService(private val typeRepository: ProjectTypeRepository) {
     }
 
     fun create(dto: ModifyProjectTypeDTO): Result<ProjectType> {
-        return Result.success(typeRepository.new(ProjectType(dto.name.uppercase())))
+        return Result.success(typeRepository.new(ProjectType(dto.name.uppercase(), dto.isLang)))
     }
 
     fun update(id: ProjectType.Id, dto: ModifyProjectTypeDTO): Result<ProjectType> {
         val type = typeRepository.findById(id) ?: return Result.failure(ProjectTypeNotFoundException(id))
-        return Result.success(typeRepository.update(type.copy(name = dto.name.uppercase())))
+        return Result.success(typeRepository.update(type.copy(name = dto.name.uppercase(), isLang = dto.isLang)))
     }
 
     fun delete(id: ProjectType.Id): Boolean {

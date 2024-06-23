@@ -2,14 +2,16 @@ package me.insiro.home.server.project.entity
 
 import me.insiro.home.server.application.domain.entity.*
 import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.sql.javatime.datetime
 import java.time.LocalDateTime
-import java.util.*
 
-object Projects : UUIDBaseTable(), ITitledTable {
+object Projects : LongIdTable(), ITitledTable, TableCreatedAt {
     val status = enumeration<Status>("status")
     override val title = varchar("title", 100)
+    override val createdAt = datetime("createdAt").clientDefault { LocalDateTime.now() }
 }
 
 object ProjectTypeRelations : Table() {
@@ -18,13 +20,13 @@ object ProjectTypeRelations : Table() {
     override val primaryKey: PrimaryKey = PrimaryKey(typeId, projectId, name = "typeId_projectId")
 }
 
-sealed interface Project : UUIDEntityVO, TitledVO {
+sealed interface Project : LongEntityVO, TitledVO, ICreatedAt {
     val status: Status
     override val id: Id?
 
     @JvmInline
-    value class Id(override val value: UUID) : VoUUID {
-        constructor(entityID: EntityID<UUID>) : this(entityID.value)
+    value class Id(override val value: Long) : LongID {
+        constructor(entityID: EntityID<Long>) : this(entityID.value)
     }
 
     data class Raw(
@@ -41,11 +43,10 @@ sealed interface Project : UUIDEntityVO, TitledVO {
         val types: List<ProjectType>? = null,
         override val createdAt: LocalDateTime? = null,
     ) : Project {
-
         constructor(project: Project, types: List<ProjectType>? = null) : this(
             project.title,
             project.status,
-            Id(project.id!!.value),
+            project.id,
             types,
             project.createdAt
         )

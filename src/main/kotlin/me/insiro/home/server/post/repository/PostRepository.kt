@@ -114,9 +114,9 @@ class PostRepository : AbsRepository<UUID, Posts, Post.Raw, Post.Id> {
         offsetLimit: OffsetLimit? = null
     ): List<Post.Raw> = transaction {
         val query = Posts.selectAll()
-        offsetLimit?.let { query.limit(it.limit, it.offset) }
-        categoryId?.let { query.adjustWhere { Posts.categoryId eq categoryId.value } }
-        status?.let { status.forEach { query.adjustWhere { Posts.status eq it } } }
+        offsetLimit?.apply { query.limit(this.limit, this.offset) }
+        categoryId?.apply { query.adjustWhere { Posts.categoryId eq categoryId.value } }
+        status?.apply { status.forEach { query.adjustWhere { Posts.status eq it } } }
         query.map { relationObjectMapping(it) }
     }
 
@@ -129,9 +129,9 @@ class PostRepository : AbsRepository<UUID, Posts, Post.Raw, Post.Id> {
             val query = Posts.join(Users, JoinType.LEFT, onColumn = Posts.authorId, otherColumn = Users.id)
                 .join(Categories, JoinType.LEFT, onColumn = Posts.categoryId, otherColumn = Categories.id)
                 .select(Posts.columns + Users.name + Categories.name)
-            offsetLimit?.let { query.limit(it.limit, it.offset) }
-            categoryId?.let { query.adjustWhere { Posts.categoryId eq categoryId.value } }
-            status?.let { status.forEach { query.adjustWhere { Posts.status eq it } } }
+            offsetLimit?.apply { query.limit(this.limit, this.offset) }
+            categoryId?.apply { query.adjustWhere { Posts.categoryId eq categoryId.value } }
+            status?.apply { status.forEach { query.adjustWhere { Posts.status eq it } } }
             query.map { joinedRelationObjectMapping(it) }
         }
 
