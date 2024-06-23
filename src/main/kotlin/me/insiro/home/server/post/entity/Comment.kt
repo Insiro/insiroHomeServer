@@ -2,20 +2,20 @@ package me.insiro.home.server.post.entity
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import me.insiro.home.server.application.domain.entity.ICreatedAt
-import me.insiro.home.server.application.domain.entity.LongBaseTable
-import me.insiro.home.server.application.domain.entity.LongEntityVO
-import me.insiro.home.server.application.domain.entity.LongID
+import me.insiro.home.server.application.domain.entity.*
 import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.id.LongIdTable
+import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.json.json
 import java.time.LocalDateTime
 
 
-object Comments : LongBaseTable() {
+object Comments : LongIdTable(), TableCreatedAt {
     val content = varchar("content", 300)
     val postId = reference("postId", Posts.id)
     val parentId = long("parentId").nullable()
     val authorInfo = json<CommentUserInfo>("author_json", Json { prettyPrint = true })
+    override val createdAt = datetime("created_at").clientDefault { LocalDateTime.now() }
 }
 
 data class Comment(
