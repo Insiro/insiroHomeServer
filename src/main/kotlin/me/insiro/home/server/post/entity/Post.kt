@@ -4,12 +4,13 @@ import me.insiro.home.server.application.domain.entity.*
 import me.insiro.home.server.user.entity.User
 import me.insiro.home.server.user.entity.Users
 import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.javatime.datetime
 import java.time.LocalDateTime
 import java.util.*
 
-object Posts : UUIDBaseTable(), ITitledTable, TableCreatedAt {
+object Posts : UUIDTable(), ITitledTable, TableCreatedAt {
     override val title: Column<String> = varchar("title", 100)
     val status = enumeration<Status>("status")
     val authorId = reference("authorId", Users.id)
