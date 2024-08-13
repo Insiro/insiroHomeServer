@@ -9,6 +9,7 @@ import me.insiro.home.server.project.entity.Projects
 import me.insiro.home.server.project.exception.ProjectNotFoundException
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
@@ -42,11 +43,12 @@ class ProjectRepository : AbsRepository<Long, Projects, Project, Project.Id> {
         }
     }
 
-    fun find(filterOption: List<Status>? = null, offsetLimit: OffsetLimit? = null): List<Project.Raw> =
+    fun find(filterOption: List<Status>? = null, offsetLimit: OffsetLimit? = null, keywords:String?=null): List<Project.Raw> =
         transaction {
             val query = Projects.selectAll()
             filterOption?.let { it.forEach { query.adjustWhere { Projects.status eq it } } }
-            offsetLimit?.let { query.limit(offsetLimit.limit, offsetLimit.offset) }
+            offsetLimit?.apply { query.limit(offsetLimit.limit, offsetLimit.offset) }
+            keywords?.apply{ query.adjustWhere { Projects.title like "%$keywords%" } }
             query.map(::relationObjectMapping)
         }
 

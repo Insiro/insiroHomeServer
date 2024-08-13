@@ -11,6 +11,7 @@ import me.insiro.home.server.user.entity.User
 import me.insiro.home.server.user.entity.Users
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
@@ -32,11 +33,21 @@ class PostRepository : AbsRepository<UUID, Posts, Post.Raw, Post.Id> {
         )
     }
 
+    fun joiningQuery(offsetLimit: OffsetLimit? = null, joinCategory: Boolean = false): Query {
+        var selectColumns = Posts.columns + Users.name
+        val query = Posts.join(Users, JoinType.LEFT, onColumn = Posts.authorId, otherColumn = Users.id)
+            .apply {
+                if (!joinCategory) return@apply
+                this.join(Categories, JoinType.LEFT, onColumn = Posts.categoryId, otherColumn = Categories.id)
+                selectColumns = selectColumns + Categories.name
+            }
+            .select(selectColumns)
+        offsetLimit?.apply { query.limit(this.limit, this.offset) }
+        return query
+    }
+
     fun findByIdJoining(id: Post.Id): Post.Joined? = transaction {
-        Posts.join(Users, JoinType.LEFT, onColumn = Posts.authorId, otherColumn = Users.id)
-            .join(Categories, JoinType.LEFT, onColumn = Posts.categoryId, otherColumn = Categories.id)
-            .select(Posts.columns + Users.name + Categories.name)
-            .where { Posts.id eq id.value }.map { joinedRelationObjectMapping(it) }.firstOrNull()
+        joiningQuery(null).where { Posts.id eq id.value }.map { joinedRelationObjectMapping(it) }.firstOrNull()
     }
 
     fun joinedRelationObjectMapping(it: ResultRow): Post.Joined {
@@ -123,15 +134,14 @@ class PostRepository : AbsRepository<UUID, Posts, Post.Raw, Post.Id> {
     fun findJoining(
         categoryId: Category.Id? = null,
         status: List<Status>? = null,
-        offsetLimit: OffsetLimit? = null
+        offsetLimit: OffsetLimit? = null,
+        keywords: String? = null,
     ): List<Post.Joined> =
         transaction {
-            val query = Posts.join(Users, JoinType.LEFT, onColumn = Posts.authorId, otherColumn = Users.id)
-                .join(Categories, JoinType.LEFT, onColumn = Posts.categoryId, otherColumn = Categories.id)
-                .select(Posts.columns + Users.name + Categories.name)
-            offsetLimit?.apply { query.limit(this.limit, this.offset) }
+            val query = joiningQuery(offsetLimit)
             categoryId?.apply { query.adjustWhere { Posts.categoryId eq categoryId.value } }
             status?.apply { status.forEach { query.adjustWhere { Posts.status eq it } } }
+            keywords?.apply { query.adjustWhere { Posts.title like "%$keywords%" } }
             query.map { joinedRelationObjectMapping(it) }
         }
 

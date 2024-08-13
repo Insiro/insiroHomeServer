@@ -37,8 +37,8 @@ class ProjectService(val projectRepository: ProjectRepository, val typeRepositor
         return projectRepository.find(filterOption, offsetLimit)
     }
 
-    fun findJoined(filterOption: List<Status>? = null, offsetLimit: OffsetLimit? = null): List<Project.Joined> {
-        return projectRepository.find(filterOption, offsetLimit)
+    fun findJoined(filterOption: List<Status>? = null, offsetLimit: OffsetLimit? = null, keywords:String?=null): List<Project.Joined> {
+        return projectRepository.find(filterOption, offsetLimit, keywords)
             .map { Project.Joined(it, typeRepository.find(projectId = it.id)) }
     }
 

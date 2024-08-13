@@ -67,9 +67,10 @@ class PostService(private val postRepository: PostRepository) {
     fun findJoinedPosts(
         id: Category.Id? = null,
         status: List<Status>? = null,
-        offsetLimit: OffsetLimit? = null
+        offsetLimit: OffsetLimit? = null,
+        keywords: String? = null
     ): List<Post.Joined> {
-        return postRepository.findJoining(categoryId = id, status = status, offsetLimit = offsetLimit)
+        return postRepository.findJoining(categoryId = id, status = status, offsetLimit = offsetLimit, keywords)
     }
 
     fun changeCategoryOfPosts(id: Category.Id, newId: Category.Id?): Int {
