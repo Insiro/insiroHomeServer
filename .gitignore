@@ -40,3 +40,4 @@ out/
 .kotlin
 
 /data
+.DS_Store

@@ -1,0 +1,13 @@
+services:
+  homeserver:
+    image: openjdk:21
+    container_name: homeserver
+    volumes:
+      - ./bin:/app
+      - ./data:/app/data
+      - ./static:/static
+    working_dir: /app
+    command: ["java", "-jar", "server.jar"]
+    ports:
+      - "9000:9000"
+    restart: unless-stopped
